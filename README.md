@@ -1,13 +1,10 @@
-<h1> PRIJECT ERP HRD </h1>
+<h1> PROJECT ERP HRD </h1>
 
 <h3>README BACKEND </h3>
 
----
-
-# 📘 README.md (Setup + SMTP)
-
-`markdown
+```markdown
 # 🚀 Backend ERP HRD - CodeIgniter 4
+```
 
 Backend ERP untuk sistem **Human Resource Development (HRD)** menggunakan **CodeIgniter 4**.  
 Dokumentasi ini berisi langkah-langkah **setup project** dan **konfigurasi SMTP Gmail**.
@@ -35,7 +32,9 @@ Dokumentasi ini berisi langkah-langkah **setup project** dan **konfigurasi SMTP 
 2. **Install Dependensi**
 
    bash
+
    composer install
+
    ```
 3. **Salin & Konfigurasi Environment**
 
@@ -75,7 +74,9 @@ database.default.port = 3306
 Buat database di MySQL:
 
 sql
-CREATE DATABASE erp;
+DOWNLOAD DATABASE erp;
+
+https://drive.google.com/drive/folders/1maGo2OPWKnthGrc0wdVUXsl3_Ihe0sLg?usp=drive_link
 ```
 
 ### 🔹 Email (SMTP Gmail)
