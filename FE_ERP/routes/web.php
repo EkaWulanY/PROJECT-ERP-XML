@@ -1,0 +1,90 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\P_PelamarController;
+
+/*
+|--------------------------------------------------------------------------
+| ROUTES UNTUK PELAMAR (Frontend)
+|--------------------------------------------------------------------------
+*/
+// Form Lamaran
+Route::get('/pelamar/form', [P_PelamarController::class, 'create'])->name('pelamar.create');
+Route::post('/pelamar/form', [P_PelamarController::class, 'store'])->name('pelamar.store');
+
+// KODE YANG BENAR
+Route::get('/pelamar/detail/{id}', [P_PelamarController::class, 'show'])->name('pelamar.show');
+
+// Verifikasi Lamaran
+Route::get('/pelamar/verifikasi/{id}', [P_PelamarController::class, 'verifikasi'])->name('pelamar.verifikasi');
+
+// Proxy ke API Jobs (opsional untuk frontend)
+Route::get('/proxy/jobs', function () {
+    $response = Http::get('http://localhost:8080/api/jobs/aktif');
+    return $response->json();
+});
+
+// Daftar Lowongan Kerja
+Route::get('/lowongan-kerja', [P_PelamarController::class, 'index'])->name('pelamar.jobs');
+
+// Detail Job (id_job)
+Route::get('/lowongan-kerja/{id}', [P_PelamarController::class, 'showJob'])->name('pelamar.jobs.show');
+
+
+/*
+|--------------------------------------------------------------------------
+| ROUTES UNTUK ADMIN (Backend)
+|--------------------------------------------------------------------------
+*/
+
+// Dashboard
+Route::get('/', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+
+// Jobs Management
+Route::get('/jobs', [AdminController::class, 'listJobs'])->name('admin.jobs.list');
+Route::get('/jobs/create', [AdminController::class, 'showJobForm'])->name('admin.jobs.create');
+Route::post('/jobs', [AdminController::class, 'storeJob'])->name('admin.jobs.store');
+Route::get('/jobs/{id}/edit', [AdminController::class, 'editJob'])->name('admin.jobs.edit');
+Route::put('/jobs/{id}', [AdminController::class, 'updateJob'])->name('admin.jobs.update');
+Route::delete('/jobs/{id}', [AdminController::class, 'deleteJob'])->name('admin.jobs.delete');
+Route::put('/jobs/{id}/activate', [AdminController::class, 'activateJob'])->name('admin.jobs.activate');
+Route::put('/jobs/{id}/deactivate', [AdminController::class, 'deactivateJob'])->name('admin.jobs.deactivate');
+
+// Pelamar Management (Admin)
+Route::get('/pelamar', [AdminController::class, 'listPelamar'])->name('admin.pelamar.list');
+Route::get('/pelamar/{id}', [AdminController::class, 'viewPelamar'])->name('admin.pelamar.view');
+Route::get('/pelamar/{id}/edit', [AdminController::class, 'editPelamar'])->name('admin.pelamar.edit');
+Route::put('/pelamar/{id}', [AdminController::class, 'updatePelamar'])->name('admin.pelamar.update');
+Route::post('/pelamar/{id}/accept', [AdminController::class, 'acceptPelamar'])->name('admin.pelamar.accept');
+Route::post('/pelamar/{id}/reject', [AdminController::class, 'rejectPelamar'])->name('admin.pelamar.reject');
+Route::put('/pelamar/{id}/update-status', [AdminController::class, 'updateStatusPelamar'])->name('admin.pelamar.update-status');
+
+// Form Lamaran (Admin CRUD)
+Route::get('/form/lamaran', [AdminController::class, 'showFormLamaran'])->name('admin.form.lamaran');
+Route::post('/form/lamaran', [AdminController::class, 'storeFormLamaran'])->name('admin.form.lamaran.store');
+
+// Edit Form Lamaran
+Route::get('/form/edit', [AdminController::class, 'showEditFormLamaran'])->name('admin.form.edit');
+
+// Pertanyaan Tambahan (CRUD)
+Route::post('/form/pertanyaan', [AdminController::class, 'storePertanyaan'])->name('admin.form.pertanyaan.store');
+Route::put('/form/pertanyaan/{id}', [AdminController::class, 'updatePertanyaan'])->name('admin.form.pertanyaan.update');
+Route::delete('/form/pertanyaan/{id}', [AdminController::class, 'deletePertanyaan'])->name('admin.form.pertanyaan.delete');
+// Route untuk view perubahan form lamaran
+Route::get('/form-lamaran/view-perubahan', [AdminController::class, 'viewPerubahan'])->name('formLamaran.viewPerubahan');
+// Route untuk menampilkan atau download file
+Route::get('/pelamar/file/{type}/{filename}', [AdminController::class, 'getPelamarFile'])->name('admin.pelamar.file');
+
+// Halaman QR Code di FE
+Route::get('/admin/qrcode', function () {
+    return view('admin.qrcode'); // bikin file qrcode.blade.php
+})->name('admin.qrcode');
+
+// --- Form Builder HRD (lihat & simpan pertanyaan per Job)
+Route::get('/form/fields/{id_job}', [AdminController::class, 'getFieldsByJob'])
+    ->name('admin.form.fields.byjob');
+
+Route::post('/form/builder/save', [AdminController::class, 'saveFormBuilder'])
+    ->name('admin.form.builder.save');
