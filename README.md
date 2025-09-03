@@ -1,5 +1,9 @@
 <h1> PROJECT ERP HRD </h1>
 
+Cara memasuki dashborad admin : http://127.0.0.1:8000/
+
+Cara memasuki pov pelamar kerja : http://127.0.0.1:8000/lowongan-kerja atau bisa melalui QRCode di dashboard admin
+
 <h3>README BACKEND </h3>
 
 ```markdown
@@ -537,7 +541,8 @@ composer require phpoffice/phpspreadsheet
 ``` bash
 php artisan serve
 ```
+jika error gunakan php artisan migrate dan php artisan key:generate
 
-### Akses melalui:
+### 8. Akses melalui:
 
 http://localhost:8000
