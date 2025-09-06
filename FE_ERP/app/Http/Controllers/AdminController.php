@@ -74,9 +74,10 @@ class AdminController extends Controller
             return back()->withInput()->with('error', 'Gagal menambahkan job.');
         }
     }
+
     /* ==========================================================
- * JOBS MANAGEMENT (LANJUTAN)
- * ========================================================== */
+     * JOBS MANAGEMENT (LANJUTAN)
+     * ========================================================== */
     public function editJob($id)
     {
         try {
@@ -122,34 +123,33 @@ class AdminController extends Controller
         }
     }
 
-   public function activateJob($id)
-{
-    try {
-        Http::withBody(json_encode(['status' => 'aktif']), 'application/json')
-            ->put("{$this->baseUrl}/api/jobs/{$id}")
-            ->throw();
+    public function activateJob($id)
+    {
+        try {
+            Http::withBody(json_encode(['status' => 'aktif']), 'application/json')
+                ->put("{$this->baseUrl}/api/jobs/{$id}")
+                ->throw();
 
-        return redirect()->route('admin.jobs.list')->with('success', 'Job berhasil diaktifkan.');
-    } catch (\Exception $e) {
-        Log::error("Error activating job {$id}: " . $e->getMessage());
-        return redirect()->route('admin.jobs.list')->with('error', 'Gagal mengaktifkan job.');
+            return redirect()->route('admin.jobs.list')->with('success', 'Job berhasil diaktifkan.');
+        } catch (\Exception $e) {
+            Log::error("Error activating job {$id}: " . $e->getMessage());
+            return redirect()->route('admin.jobs.list')->with('error', 'Gagal mengaktifkan job.');
+        }
     }
-}
 
-public function deactivateJob($id)
-{
-    try {
-        Http::withBody(json_encode(['status' => 'nonaktif']), 'application/json')
-            ->put("{$this->baseUrl}/api/jobs/{$id}")
-            ->throw();
+    public function deactivateJob($id)
+    {
+        try {
+            Http::withBody(json_encode(['status' => 'nonaktif']), 'application/json')
+                ->put("{$this->baseUrl}/api/jobs/{$id}")
+                ->throw();
 
-        return redirect()->route('admin.jobs.list')->with('success', 'Job berhasil dinonaktifkan.');
-    } catch (\Exception $e) {
-        Log::error("Error deactivating job {$id}: " . $e->getMessage());
-        return redirect()->route('admin.jobs.list')->with('error', 'Gagal menonaktifkan job.');
+            return redirect()->route('admin.jobs.list')->with('success', 'Job berhasil dinonaktifkan.');
+        } catch (\Exception $e) {
+            Log::error("Error deactivating job {$id}: " . $e->getMessage());
+            return redirect()->route('admin.jobs.list')->with('error', 'Gagal menonaktifkan job.');
+        }
     }
-}
-
 
     /* ==========================================================
      * PELAMAR MANAGEMENT
@@ -181,7 +181,15 @@ public function deactivateJob($id)
             foreach ($pelamar as $key => $p) {
                 $idJob = $p['id_job'] ?? null;
                 $job = $idJob && isset($jobMap[$idJob]) ? $jobMap[$idJob] : null;
+
+                // mapping posisi
                 $pelamar[$key]['posisi_dilamar'] = $job['posisi'] ?? 'N/A';
+
+                // mapping nama agar aman
+                $pelamar[$key]['nama_pelamar'] = $p['nama_lengkap']
+                    ?? $p['nama']
+                    ?? $p['full_name']
+                    ?? 'Tidak diketahui';
 
                 if ($job) {
                     $minEdu = $rank[$job['pendidikan_min']] ?? 0;

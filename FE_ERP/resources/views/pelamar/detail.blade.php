@@ -55,8 +55,6 @@
         <div class="mt-4">
             <!-- Tombol kanan bawah -->
             <div class="text-end">
-                <a href="{{ route('pelamar.create') }}" class="btn btn-warning">Cek Kembali Data</a>
-
                 {{-- ✅ Tombol verifikasi lewat email --}}
                 <a href="{{ route('pelamar.verifikasi', $pelamar->id_lamaran) }}"
                     class="btn btn-success">

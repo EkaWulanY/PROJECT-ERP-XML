@@ -60,12 +60,12 @@
                     @foreach($groupedPelamar['on_progress'] as $p)
                         @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
                         <tr>
-                            <td>{{ $p['nama_lengkap'] ?? '-' }}</td>
+                            <td>{{ $p['nama_pelamar'] ?? '-' }}</td>
                             <td>{{ $p['posisi_dilamar'] ?? '-' }}</td>
                             <td class="space-x-1">
-                                <button class="bg-green-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','lolos')">Accept</button>
-                                <button class="bg-red-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','tidak_lolos')">Reject</button>
-                                <button class="bg-indigo-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','talent_pool')">Pool</button>
+                                <button class="bg-green-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','{{ $p['nama_pelamar'] }}','{{ $p['posisi_dilamar'] }}','lolos')">Accept</button>
+                                <button class="bg-red-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','{{ $p['nama_pelamar'] }}','{{ $p['posisi_dilamar'] }}','tidak_lolos')">Reject</button>
+                                <button class="bg-indigo-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','{{ $p['nama_pelamar'] }}','{{ $p['posisi_dilamar'] }}','talent_pool')">Pool</button>
                             </td>
                             <td><span class="status-label status-on-progress-label">On Progress</span></td>
                             <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
@@ -92,7 +92,7 @@
                     @foreach($groupedPelamar['pending'] as $p)
                         @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
                         <tr>
-                            <td>{{ $p['nama_lengkap'] }}</td>
+                            <td>{{ $p['nama_pelamar'] }}</td>
                             <td>{{ $p['posisi_dilamar'] }}</td>
                             <td>
                                 <button class="bg-blue-500 text-white px-2 py-1 rounded" onclick="backToProcess('{{ $pid }}')">Kembali ke Proses</button>
@@ -122,7 +122,7 @@
                     @foreach($groupedPelamar['talent_pool'] as $p)
                         @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
                         <tr>
-                            <td>{{ $p['nama_lengkap'] }}</td>
+                            <td>{{ $p['nama_pelamar'] }}</td>
                             <td>{{ $p['posisi_dilamar'] }}</td>
                             <td>
                                 <button class="bg-blue-500 text-white px-2 py-1 rounded" onclick="backToProcess('{{ $pid }}')">Kembali ke Proses</button>
@@ -151,7 +151,7 @@
                     @foreach($groupedPelamar['lolos'] as $p)
                         @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
                         <tr>
-                            <td>{{ $p['nama_lengkap'] }}</td>
+                            <td>{{ $p['nama_pelamar'] }}</td>
                             <td>{{ $p['posisi_dilamar'] }}</td>
                             <td><span class="status-label status-diterima-label">Diterima</span></td>
                             <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
@@ -177,7 +177,7 @@
                     @foreach($groupedPelamar['tidak_lolos'] as $p)
                         @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
                         <tr>
-                            <td>{{ $p['nama_lengkap'] }}</td>
+                            <td>{{ $p['nama_pelamar'] }}</td>
                             <td>{{ $p['posisi_dilamar'] }}</td>
                             <td><span class="status-label status-ditolak-label">Ditolak</span></td>
                             <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
@@ -220,7 +220,7 @@
             $('#pelamar-table, #pending-table, #pool-table, #accept-table, #reject-table').DataTable();
         });
 
-        function openEmailModal(id, status) {
+        function openEmailModal(id, nama, posisi, status) {
             $('#pelamarId').val(id);
             $('#status').val(status);
 
@@ -228,15 +228,15 @@
             switch (status) {
                 case 'lolos':
                     subject = "Selamat! Anda Lolos Tahap Seleksi";
-                    message = "Halo,\n\nSelamat! Anda dinyatakan LOLOS.\nTim HRD akan segera menghubungi Anda.";
+                    message = `Yth. ${nama},\n\nDengan senang hati kami informasikan bahwa Anda dinyatakan *LOLOS* untuk posisi ${posisi}.\nTim HRD akan segera menghubungi Anda untuk proses berikutnya.\n\nHormat kami,\nTim HRD`;
                     break;
                 case 'tidak_lolos':
-                    subject = "Hasil Seleksi Lamaran";
-                    message = "Halo,\n\nTerima kasih telah melamar.\nMohon maaf, kali ini Anda belum lolos seleksi.";
+                    subject = `Hasil Seleksi Lamaran - ${posisi}`;
+                    message = `Yth. ${nama},\n\nDengan berat hati kami informasikan bahwa kali ini Anda *belum lolos* seleksi.\nKami doakan kesuksesan Anda di kesempatan berikutnya.\n\nHormat kami,\nTim HRD`;
                     break;
                 case 'talent_pool':
-                    subject = "Lamaran Anda Masuk Talent Pool";
-                    message = "Halo,\n\nTerima kasih atas lamaran Anda.\nProfil Anda kami simpan ke dalam Talent Pool.";
+                    subject = `Lamaran Anda Masuk Talent Pool - ${posisi}`;
+                    message = `Terima kasih ${nama} atas lamaran Anda untuk posisi ${posisi}.\nProfil Anda kami simpan ke dalam *Talent Pool* dan akan kami hubungi apabila ada posisi yang sesuai di kemudian hari.\n\nHormat kami,\nTim HRD.`;
                     break;
             }
 
