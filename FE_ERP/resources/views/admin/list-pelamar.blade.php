@@ -1,61 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Pelamar - Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #e5e7eb;
-        }
-
-        .hover-effect-btn:hover {
-            background-color: #4E71FF;
-            transition: background-color 0.3s ease;
-        }
-
-        .table-container {
-            max-height: 400px;
-            /* tinggi area tabel */
-            overflow-y: auto;
-            /* scroll vertikal */
-            overflow-x: auto;
-           
-        }
-
-        .status-on-progress-label {
-            background-color: #3b82f6;
-            color: #fff;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-weight: 500;
-        }
-
-        .status-diterima-label {
-            background-color: #21CA57;
-            color: #fff;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-weight: 500;
-        }
-
-        .status-ditolak-label {
-            background-color: #ef4444;
-            color: #fff;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-weight: 500;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #e5e7eb; }
+        .status-label { padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 500; color: #fff; }
+        .status-on-progress-label { background-color: #3b82f6; }
+        .status-diterima-label { background-color: #21CA57; }
+        .status-ditolak-label { background-color: #ef4444; }
+        .status-pending-label { background-color: #f59e0b; }
+        .status-pool-label { background-color: #6366f1; }
     </style>
 </head>
-
 <body class="bg-gray-200">
+    <!-- Header -->
     <div class="bg-[#072A75] text-white p-4 flex justify-between items-center shadow-lg">
         <div class="flex items-center">
             <img src="{{ asset('admin/img/logo.jpg') }}" alt="Logo" class="h-8 w-8 mr-2 rounded-full">
@@ -64,130 +28,272 @@
         <div class="flex items-center">
             <span class="mr-2">Admin</span>
             <svg class="h-8 w-8 rounded-full border-2 border-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A7.962 7.962 0 0112 15a7.962 7.962 0 016.879 2.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A7.962 7.962 0 0112 15a7.962 7.962 0 016.879 2.804M15 11a3 3 0 11-6 0 3 0 016 0z" />
             </svg>
         </div>
     </div>
 
-    <div class="container mx-auto p-8">
+    <div class="container mx-auto p-8 space-y-12">
+        <!-- Menu -->
         <div class="flex justify-center space-x-4 mb-8">
-            <a href="{{ route('admin.jobs.list') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover-effect-btn">List Job</a>
-            <a href="{{ route('admin.pelamar.list') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover-effect-btn">Data Pelamar</a>
-            <a href="{{ route('admin.form.lamaran') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover-effect-btn">Edit Form Daftar</a>
-            <a href="{{ route('admin.qrcode') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover-effect-btn">Generate QR</a>
-            <a href="{{ asset('finger/finger.php') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover-effect-btn">Absensi</a>
+            <a href="{{ route('admin.jobs.list') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:bg-purple-400">List Job</a>
+            <a href="{{ route('admin.pelamar.list') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:bg-purple-400">Data Pelamar</a>
+            <a href="{{ route('admin.form.lamaran') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:bg-purple-400">Edit Form Daftar</a>
+            <a href="{{ route('admin.qrcode') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:bg-purple-400">Generate QR</a>
+            <a href="{{ asset('finger/finger.php') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:bg-purple-400">Absensi</a>
         </div>
 
-        @if (session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <span class="block sm:inline">{{ session('success') }}</span>
-        </div>
-        @endif
-        @if (session('error'))
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <span class="block sm:inline">{{ session('error') }}</span>
-        </div>
-        @endif
-
+        <!-- Container On Progress -->
         <div class="bg-white rounded-2xl shadow-xl p-8">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Daftar Pelamar</h2>
-            </div>
-
-            <div class="table-container">
-                <table class="min-w-full divide-y divide-gray-200" id="pelamar-table">
-                    <thead class="bg-gray-50 sticky top-0 z-10">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Daftar Pelamar (On Progress)</h2>
+            <table id="pelamar-table" class="display min-w-full">
+                <thead>
+                    <tr>
+                        <th>Nama Pelamar</th>
+                        <th>Posisi Dilamar</th>
+                        <th>Aksi</th>
+                        <th>Status</th>
+                        <th>Detail</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($groupedPelamar['on_progress'] as $p)
+                        @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pelamar</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posisi Dilamar</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Detail</th>
+                            <td>{{ $p['nama_lengkap'] ?? '-' }}</td>
+                            <td>{{ $p['posisi_dilamar'] ?? '-' }}</td>
+                            <td class="space-x-1">
+                                <button class="bg-green-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','lolos')">Accept</button>
+                                <button class="bg-red-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','tidak_lolos')">Reject</button>
+                                <button class="bg-indigo-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','talent_pool')">Pool</button>
+                            </td>
+                            <td><span class="status-label status-on-progress-label">On Progress</span></td>
+                            <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
                         </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse ($pelamar as $pelamarData)
-                        @php
-                        // --- Normalisasi data API ---
-                        $p = is_array($pelamarData) ? (object) $pelamarData : $pelamarData;
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
 
-                        // ID fallback (support beberapa format dari BE)
-                        $pid = $p->id_lamaran ?? $p->id ?? $p->id_form_lamaran ?? null;
-
-                        // Status normalisasi
-                        $raw = strtolower(trim((string) ($p->status ?? '')));
-                        switch ($raw) {
-                        case 'diterima':
-                        case 'lolos':
-                        $statusClass = 'status-diterima-label';
-                        $statusText = 'Diterima';
-                        break;
-
-                        case 'ditolak':
-                        case 'tidak_lolos':
-                        $statusClass = 'status-ditolak-label';
-                        $statusText = 'Ditolak';
-                        break;
-
-                        default:
-                        $statusClass = 'status-on-progress-label';
-                        $statusText = 'On Progress';
-                        break;
-                        }
-                        @endphp
-
+        <!-- Container Pending -->
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Pending</h2>
+            <table id="pending-table" class="display min-w-full">
+                <thead>
+                    <tr>
+                        <th>Nama</th>
+                        <th>Posisi</th>
+                        <th>Aksi</th>
+                        <th>Status</th>
+                        <th>Detail</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($groupedPelamar['pending'] as $p)
+                        @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
                         <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $pelamarData['nama_lengkap'] ?? 'N/A' }}</div>
+                            <td>{{ $p['nama_lengkap'] }}</td>
+                            <td>{{ $p['posisi_dilamar'] }}</td>
+                            <td>
+                                <button class="bg-blue-500 text-white px-2 py-1 rounded" onclick="backToProcess('{{ $pid }}')">Kembali ke Proses</button>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">
-                                    {{ $pelamarData['posisi'] ?? $pelamarData['posisi_dilamar'] ?? 'N/A' }}
-                                </div>
-                            </td>
-
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <div class="flex items-center space-x-2">
-                                    @if($pid)
-                                    <form action="{{ route('admin.pelamar.accept', $pid) }}" method="POST" onsubmit="return confirm('Yakin terima pelamar ini?')">
-                                        @csrf
-                                        <button type="submit" class="bg-green-500 text-white py-1 px-3 rounded-md shadow-sm hover:bg-green-600 transition-colors">Accept</button>
-                                    </form>
-
-                                    <form action="{{ route('admin.pelamar.reject', $pid) }}" method="POST" onsubmit="return confirm('Yakin tolak pelamar ini?')">
-                                        @csrf
-                                        <button type="submit" class="bg-red-500 text-white py-1 px-3 rounded-md shadow-sm hover:bg-red-600 transition-colors">Reject</button>
-                                    </form>
-                                    @else
-                                    <span class="text-gray-400">ID tidak ditemukan</span>
-                                    @endif
-                                </div>
-                            </td>
-
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <span class="{{ $statusClass }}">{{ $statusText }}</span>
-                            </td>
-
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                @if($pid)
-                                <a href="{{ route('admin.pelamar.view', $pid) }}" class="text-blue-600 hover:text-blue-900 mr-2">View</a>
-                                @else
-                                <span class="text-gray-400">-</span>
-                                @endif
-                            </td>
+                            <td><span class="status-label status-pending-label">Belum Sesuai</span></td>
+                            <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
                         </tr>
-                        @empty
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Container Pool -->
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Talent Pool</h2>
+            <table id="pool-table" class="display min-w-full">
+                <thead>
+                    <tr>
+                        <th>Nama</th>
+                        <th>Posisi</th>
+                        <th>Aksi</th>
+                        <th>Status</th>
+                        <th>Detail</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($groupedPelamar['talent_pool'] as $p)
+                        @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
                         <tr>
-                            <td colspan="5" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                                Tidak ada data pelamar yang tersedia.
+                            <td>{{ $p['nama_lengkap'] }}</td>
+                            <td>{{ $p['posisi_dilamar'] }}</td>
+                            <td>
+                                <button class="bg-blue-500 text-white px-2 py-1 rounded" onclick="backToProcess('{{ $pid }}')">Kembali ke Proses</button>
                             </td>
+                            <td><span class="status-label status-pool-label">Talent Pool</span></td>
+                            <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
                         </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Container Diterima -->
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Diterima</h2>
+            <table id="accept-table" class="display min-w-full">
+                <thead>
+                    <tr>
+                        <th>Nama</th>
+                        <th>Posisi</th>
+                        <th>Status</th>
+                        <th>Detail</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($groupedPelamar['lolos'] as $p)
+                        @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
+                        <tr>
+                            <td>{{ $p['nama_lengkap'] }}</td>
+                            <td>{{ $p['posisi_dilamar'] }}</td>
+                            <td><span class="status-label status-diterima-label">Diterima</span></td>
+                            <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Container Ditolak -->
+        <div class="bg-white rounded-2xl shadow-xl p-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Ditolak</h2>
+            <table id="reject-table" class="display min-w-full">
+                <thead>
+                    <tr>
+                        <th>Nama</th>
+                        <th>Posisi</th>
+                        <th>Status</th>
+                        <th>Detail</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($groupedPelamar['tidak_lolos'] as $p)
+                        @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
+                        <tr>
+                            <td>{{ $p['nama_lengkap'] }}</td>
+                            <td>{{ $p['posisi_dilamar'] }}</td>
+                            <td><span class="status-label status-ditolak-label">Ditolak</span></td>
+                            <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
-</body>
 
+    <!-- Modal Email -->
+    <div id="emailModal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-lg w-1/2 p-6">
+            <h2 class="text-xl font-bold mb-4">Kirim Email</h2>
+            <form id="emailForm">
+                @csrf
+                <input type="hidden" id="pelamarId" name="pelamarId">
+                <input type="hidden" id="status" name="status">
+                <div class="mb-4">
+                    <label class="block text-gray-700">Subject</label>
+                    <input type="text" id="subject" name="subject" class="w-full border rounded px-3 py-2">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700">Pesan</label>
+                    <textarea id="message" name="message" rows="6" class="w-full border rounded px-3 py-2"></textarea>
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal()" class="bg-gray-500 text-white px-4 py-2 rounded">Batal</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Kirim Email</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#pelamar-table, #pending-table, #pool-table, #accept-table, #reject-table').DataTable();
+        });
+
+        function openEmailModal(id, status) {
+            $('#pelamarId').val(id);
+            $('#status').val(status);
+
+            let subject = '', message = '';
+            switch (status) {
+                case 'lolos':
+                    subject = "Selamat! Anda Lolos Tahap Seleksi";
+                    message = "Halo,\n\nSelamat! Anda dinyatakan LOLOS.\nTim HRD akan segera menghubungi Anda.";
+                    break;
+                case 'tidak_lolos':
+                    subject = "Hasil Seleksi Lamaran";
+                    message = "Halo,\n\nTerima kasih telah melamar.\nMohon maaf, kali ini Anda belum lolos seleksi.";
+                    break;
+                case 'talent_pool':
+                    subject = "Lamaran Anda Masuk Talent Pool";
+                    message = "Halo,\n\nTerima kasih atas lamaran Anda.\nProfil Anda kami simpan ke dalam Talent Pool.";
+                    break;
+            }
+
+            $('#subject').val(subject);
+            $('#message').val(message);
+            $('#emailModal').removeClass('hidden');
+        }
+
+        function closeModal() {
+            $('#emailModal').addClass('hidden');
+        }
+
+        $('#emailForm').on('submit', function(e) {
+            e.preventDefault();
+            const id = $('#pelamarId').val();
+            const subject = $('#subject').val();
+            const message = $('#message').val();
+            const status = $('#status').val();
+
+            $.ajax({
+                url: `/pelamar/${id}/send-email`,
+                method: 'POST',
+                data: {
+                    subject,
+                    message,
+                    status,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(res) {
+                    alert(res.message || 'Status berhasil diperbarui & email terkirim.');
+                    closeModal();
+                    location.reload();
+                },
+                error: function(err) {
+                    console.error(err);
+                    alert('Gagal mengirim email.');
+                }
+            });
+        });
+
+        function backToProcess(id) {
+            $.ajax({
+                url: `/pelamar/${id}/back`,
+                method: 'POST',
+                data: {
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(res) {
+                    alert(res.message || 'Status dikembalikan ke On Progress');
+                    location.reload();
+                },
+                error: function(err) {
+                    console.error(err);
+                    alert('Gagal update status');
+                }
+            });
+        }
+    </script>
+</body>
 </html>

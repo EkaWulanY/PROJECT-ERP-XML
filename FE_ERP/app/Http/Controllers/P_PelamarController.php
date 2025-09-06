@@ -9,6 +9,7 @@ use App\Models\P_FormLamaran;
 use App\Models\P_PengalamanKerja;
 use App\Models\FormField;
 use App\Models\P_JawabanPelamar;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log; // Gunakan ini untuk debugging jika diperlukan
 
 class P_PelamarController extends Controller
@@ -195,8 +196,24 @@ class P_PelamarController extends Controller
      * Menampilkan halaman verifikasi (kirim ke WA).
      */
     public function verifikasi($id)
-    {
-        $pelamar = P_FormLamaran::with('job')->findOrFail($id);
-        return view('pelamar.verifikasi', compact('pelamar'));
-    }
+{
+    $pelamar = P_FormLamaran::with('job')->findOrFail($id);
+
+    // === Kirim email ke HRD ===
+    $hrdEmail = "hanakur37@gmail.com"; // ganti dengan email HRD sebenarnya
+    Mail::raw(
+        "Lamaran baru masuk dari: {$pelamar->nama_lengkap}\n".
+        "Posisi: {$pelamar->job->posisi}\n".
+        "Email: {$pelamar->email}\n".
+        "No HP: {$pelamar->no_hp}\n\n".
+        "Silakan login ke sistem untuk detail lebih lanjut.",
+        function ($message) use ($hrdEmail) {
+            $message->to($hrdEmail)
+                    ->subject("Lamaran Baru - Notifikasi Sistem");
+        }
+    );
+
+    // === Redirect ke halaman sukses ===
+    return view('pelamar.verifikasi', compact('pelamar'));
+}
 }

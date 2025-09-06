@@ -14,7 +14,7 @@ use App\Http\Controllers\P_PelamarController;
 Route::get('/pelamar/form', [P_PelamarController::class, 'create'])->name('pelamar.create');
 Route::post('/pelamar/form', [P_PelamarController::class, 'store'])->name('pelamar.store');
 
-// KODE YANG BENAR
+// Detail Lamaran (Pelamar)
 Route::get('/pelamar/detail/{id}', [P_PelamarController::class, 'show'])->name('pelamar.show');
 
 // Verifikasi Lamaran
@@ -28,8 +28,6 @@ Route::get('/proxy/jobs', function () {
 
 // Daftar Lowongan Kerja
 Route::get('/lowongan-kerja', [P_PelamarController::class, 'index'])->name('pelamar.jobs');
-
-// Detail Job (id_job)
 Route::get('/lowongan-kerja/{id}', [P_PelamarController::class, 'showJob'])->name('pelamar.jobs.show');
 
 
@@ -57,34 +55,38 @@ Route::get('/pelamar', [AdminController::class, 'listPelamar'])->name('admin.pel
 Route::get('/pelamar/{id}', [AdminController::class, 'viewPelamar'])->name('admin.pelamar.view');
 Route::get('/pelamar/{id}/edit', [AdminController::class, 'editPelamar'])->name('admin.pelamar.edit');
 Route::put('/pelamar/{id}', [AdminController::class, 'updatePelamar'])->name('admin.pelamar.update');
+
+// Update Status + Email
 Route::post('/pelamar/{id}/accept', [AdminController::class, 'acceptPelamar'])->name('admin.pelamar.accept');
 Route::post('/pelamar/{id}/reject', [AdminController::class, 'rejectPelamar'])->name('admin.pelamar.reject');
+Route::post('/pelamar/{id}/pending', [AdminController::class, 'pendingPelamar'])->name('admin.pelamar.pending');
+Route::post('/pelamar/{id}/pool', [AdminController::class, 'poolPelamar'])->name('admin.pelamar.pool');
+Route::post('/pelamar/{id}/back', [AdminController::class, 'backToProcess'])->name('admin.pelamar.back');
+Route::post('/pelamar/{id}/send-email', [AdminController::class, 'sendEmailPelamar'])->name('admin.pelamar.send-email');
+
 Route::put('/pelamar/{id}/update-status', [AdminController::class, 'updateStatusPelamar'])->name('admin.pelamar.update-status');
 
 // Form Lamaran (Admin CRUD)
 Route::get('/form/lamaran', [AdminController::class, 'showFormLamaran'])->name('admin.form.lamaran');
 Route::post('/form/lamaran', [AdminController::class, 'storeFormLamaran'])->name('admin.form.lamaran.store');
-
-// Edit Form Lamaran
 Route::get('/form/edit', [AdminController::class, 'showEditFormLamaran'])->name('admin.form.edit');
 
 // Pertanyaan Tambahan (CRUD)
 Route::post('/form/pertanyaan', [AdminController::class, 'storePertanyaan'])->name('admin.form.pertanyaan.store');
 Route::put('/form/pertanyaan/{id}', [AdminController::class, 'updatePertanyaan'])->name('admin.form.pertanyaan.update');
 Route::delete('/form/pertanyaan/{id}', [AdminController::class, 'deletePertanyaan'])->name('admin.form.pertanyaan.delete');
+
 // Route untuk view perubahan form lamaran
 Route::get('/form-lamaran/view-perubahan', [AdminController::class, 'viewPerubahan'])->name('formLamaran.viewPerubahan');
+
 // Route untuk menampilkan atau download file
 Route::get('/pelamar/file/{type}/{filename}', [AdminController::class, 'getPelamarFile'])->name('admin.pelamar.file');
 
-// Halaman QR Code di FE
+// Halaman QR Code (Admin)
 Route::get('/admin/qrcode', function () {
-    return view('admin.qrcode'); // bikin file qrcode.blade.php
+    return view('admin.qrcode');
 })->name('admin.qrcode');
 
 // --- Form Builder HRD (lihat & simpan pertanyaan per Job)
-Route::get('/form/fields/{id_job}', [AdminController::class, 'getFieldsByJob'])
-    ->name('admin.form.fields.byjob');
-
-Route::post('/form/builder/save', [AdminController::class, 'saveFormBuilder'])
-    ->name('admin.form.builder.save');
+Route::get('/form/fields/{id_job}', [AdminController::class, 'getFieldsByJob'])->name('admin.form.fields.byjob');
+Route::post('/form/builder/save', [AdminController::class, 'saveFormBuilder'])->name('admin.form.builder.save');

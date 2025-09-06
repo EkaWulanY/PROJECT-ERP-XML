@@ -39,8 +39,15 @@ $routes->group('api', function ($routes) {
     $routes->delete('pelamar/(:num)', 'Api\FormLamaranController::delete/$1'); // DELETE
     $routes->put('pelamar/(:num)/status', 'Api\FormLamaranController::updateStatus/$1'); // UPDATE Status
     // Aksi langsung dari HRD (klik centang / X)
-    $routes->post('pelamar/(:num)/done', 'Api\FormLamaranController::markDone/$1');
-    $routes->post('pelamar/(:num)/reject', 'Api\FormLamaranController::markReject/$1');
+    // Aksi tambahan di HRD
+    // Compose email sebelum kirim (Accept / Reject)
+    $routes->get('pelamar/(:num)/compose/(:alpha)', 'Api\FormLamaranController::compose/$1/$2');
+
+    // Kirim email setelah HR edit (Accept / Reject)
+    $routes->post('pelamar/(:num)/sendEmail', 'Api\FormLamaranController::sendEmail/$1');
+
+    // Update status langsung tanpa email (Belum Sesuai / Talent Pool)
+    $routes->put('pelamar/(:num)/updateStatus', 'Api\FormLamaranController::updateStatus/$1');
 
     // JAWABAN PELAMAR
     $routes->get('pelamar/(:num)/jawaban', 'Api\JawabanController::byPelamar/$1');
@@ -61,6 +68,8 @@ $routes->get('lamaran', 'Api\FormPelamarController::index');
 
 // Pelamar lihat detail lamaran tertentu
 $routes->get('lamaran/(:num)', 'Api\FormPelamarController::show/$1');
+//Konfirmasi HRD melalui email
+$routes->post('lamaran/(:num)/konfirmasiHRD', 'Api\FormPelamarController::konfirmasiHRD/$1');
 
 // Pelamar buat lamaran baru
 $routes->post('lamaran', 'Api\FormPelamarController::create');

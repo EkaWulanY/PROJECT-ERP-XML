@@ -15,8 +15,8 @@ class FormLamaranController extends ResourceController
     {
         return $this->respond(
             $this->model->orderBy('done', 'ASC')
-                        ->orderBy('tgl_daftar', 'DESC')
-                        ->findAll()
+                ->orderBy('tgl_daftar', 'DESC')
+                ->findAll()
         );
     }
 
@@ -35,19 +35,17 @@ class FormLamaranController extends ResourceController
             'email'        => 'required|valid_email',
             'no_hp'        => 'required|numeric',
             'id_job'       => 'required|integer',
-            'upload_berkas'=> 'uploaded[upload_berkas]|max_size[upload_berkas,10240]|ext_in[upload_berkas,pdf,doc,docx,jpg,png]'
+            'upload_berkas' => 'uploaded[upload_berkas]|max_size[upload_berkas,10240]|ext_in[upload_berkas,pdf,doc,docx,jpg,png]'
         ];
 
         if (!$this->validate($rules)) {
             return $this->failValidationErrors($this->validator->getErrors());
         }
 
-        // Upload file
         $file = $this->request->getFile('upload_berkas');
         $newName = $file->getRandomName();
         $file->move(FCPATH . 'uploads/berkas', $newName);
 
-        // Simpan ke DB
         $data = $this->request->getPost();
         $data['upload_berkas'] = $newName;
 
@@ -88,7 +86,113 @@ class FormLamaranController extends ResourceController
         return $this->respondDeleted(['status' => 'success', 'message' => 'Pelamar dihapus']);
     }
 
-    // PUT /api/pelamar/{id}/status
+    // ======================
+    // Email & Status Methods
+    // ======================
+
+    // GET /api/pelamar/{id}/compose/{aksi}
+    // Accept / Reject / Belum Sesuai / Talent Pool → generate default email + status
+    public function compose($id = null, $aksi = null)
+    {
+        $pelamar = $this->model->find($id);
+        if (!$pelamar) {
+            return $this->failNotFound("Pelamar tidak ditemukan");
+        }
+
+        // Ambil data posisi
+        $db      = \Config\Database::connect();
+        $builder = $db->table('job');
+        $job     = $builder->where('id_job', $pelamar['id_job'])->get()->getRowArray();
+        $posisi  = $job ? $job['posisi'] : 'Posisi yang dilamar';
+
+        $subject = '';
+        $message = '';
+        $status  = '';
+
+        switch ($aksi) {
+            case 'accept':
+                $status  = 'lolos';
+                $subject = "Selamat! Anda Lolos Tahap Seleksi";
+                $message = "Halo {$pelamar['nama_lengkap']},\n\n" .
+                    "Selamat! Anda dinyatakan *LOLOS* untuk posisi {$posisi}.\n" .
+                    "Tim HRD akan segera menghubungi Anda.";
+                break;
+
+            case 'reject':
+                $status  = 'tidak_lolos';
+                $subject = "Hasil Seleksi Lamaran - {$posisi}";
+                $message = "Halo {$pelamar['nama_lengkap']},\n\n" .
+                    "Terima kasih telah melamar untuk posisi {$posisi}.\n" .
+                    "Mohon maaf, kali ini Anda *belum lolos* seleksi.";
+                break;
+
+            case 'belum':
+                $status  = 'belum_sesuai';
+                $subject = "Lamaran Anda Belum Sesuai - {$posisi}";
+                $message = "Halo {$pelamar['nama_lengkap']},\n\n" .
+                    "Terima kasih atas lamaran Anda untuk posisi {$posisi}.\n" .
+                    "Saat ini kualifikasi Anda *belum sesuai* dengan kebutuhan.\n" .
+                    "Namun, jangan ragu untuk melamar kembali di kesempatan berikutnya.";
+                break;
+
+            case 'talent':
+                $status  = 'talent_pool';
+                $subject = "Lamaran Anda Masuk Talent Pool - {$posisi}";
+                $message = "Halo {$pelamar['nama_lengkap']},\n\n" .
+                    "Terima kasih atas lamaran Anda untuk posisi {$posisi}.\n" .
+                    "Profil Anda kami simpan ke dalam *Talent Pool*, " .
+                    "dan akan dihubungi jika ada posisi yang sesuai di kemudian hari.";
+                break;
+
+            default:
+                return $this->failValidationErrors("Aksi hanya untuk accept/reject/belum/talent");
+        }
+
+        return $this->respond([
+            'status'  => $status,
+            'subject' => $subject,
+            'message' => $message,
+            'pelamar' => $pelamar
+        ]);
+    }
+
+
+    // POST /api/pelamar/{id}/sendEmail
+    // Update status + kirim email (untuk semua aksi)
+    public function sendEmail($id = null)
+    {
+        $pelamar = $this->model->find($id);
+        if (!$pelamar) {
+            return $this->failNotFound("Pelamar tidak ditemukan");
+        }
+
+        $data = $this->request->getJSON(true);
+        if (!isset($data['subject']) || !isset($data['message']) || !isset($data['status'])) {
+            return $this->failValidationErrors("Subject, message, dan status wajib diisi");
+        }
+
+        // Update status pelamar
+        $this->model->update($id, ['status' => $data['status']]);
+
+        // Kirim email
+        $email = \Config\Services::email();
+        $email->setTo($pelamar['email']);
+        $email->setFrom(getenv('email.fromEmail'), getenv('email.fromName'));
+        $email->setSubject($data['subject']);
+        $email->setMessage($data['message']);
+
+        if ($email->send()) {
+            return $this->respond([
+                'status'  => 'success',
+                'message' => "Status diperbarui & email berhasil dikirim ke {$pelamar['email']}"
+            ]);
+        } else {
+            return $this->failServerError("Gagal mengirim email. Cek konfigurasi SMTP.");
+        }
+    }
+
+    // PUT /api/pelamar/{id}/updateStatus
+    // Untuk Belum Sesuai / Talent Pool → hanya update status, tanpa email
     public function updateStatus($id = null)
     {
         $data = $this->request->getJSON(true);
@@ -102,86 +206,25 @@ class FormLamaranController extends ResourceController
             return $this->failNotFound("Pelamar tidak ditemukan");
         }
 
-        $this->model->update($id, ['status' => $data['status'], 'done' => 0]);
-
-        return $this->respond(['status' => 'success', 'message' => 'Status pelamar diperbarui']);
-    }
-
-    // POST /api/pelamar/{id}/done
-    public function markDone($id = null)
-    {
-        $pelamar = $this->model->find($id);
-        if (!$pelamar) {
-            return $this->failNotFound("Pelamar tidak ditemukan");
-        }
-
-        // Update status jadi "lolos"
-        $this->model->update($id, ['status' => 'lolos']);
-
-        // Kirim email ke pelamar
-        $email = \Config\Services::email();
-        $email->setTo($pelamar['email']);
-        $email->setFrom(getenv('email.fromEmail'), getenv('email.fromName'));
-        $email->setSubject("Selamat! Lamaran Anda Diterima");
-        $email->setMessage("
-            Halo {$pelamar['nama_lengkap']},<br><br>
-            Selamat! Lamaran Anda telah <b>LOLOS</b>.<br>
-            Tim HRD akan segera menghubungi Anda untuk tahap berikutnya.<br><br>
-            Salam,<br>
-            HRD
-        ");
-        $email->send();
+        $this->model->update($id, ['status' => $data['status']]);
 
         return $this->respond([
-            'status' => 'success',
-            'message' => "Pelamar ditandai LOLOS & email terkirim ke {$pelamar['email']}"
+            'status'  => 'success',
+            'message' => "Status pelamar diperbarui menjadi {$data['status']}"
         ]);
     }
 
-    // POST /api/pelamar/{id}/reject
-    public function markReject($id = null)
-    {
-        $pelamar = $this->model->find($id);
-        if (!$pelamar) {
-            return $this->failNotFound("Pelamar tidak ditemukan");
-        }
+    // ======================
+    // Berkas Methods
+    // ======================
 
-        // Update status jadi "tidak_lolos"
-        $this->model->update($id, ['status' => 'tidak_lolos']);
-
-        // Kirim email ke pelamar
-        $email = \Config\Services::email();
-        $email->setTo($pelamar['email']);
-        $email->setFrom(getenv('email.fromEmail'), getenv('email.fromName'));
-        $email->setSubject("Status Lamaran Anda");
-        $email->setMessage("
-            Halo {$pelamar['nama_lengkap']},<br><br>
-            Terima kasih sudah melamar di perusahaan kami.<br>
-            Setelah dipertimbangkan, lamaran Anda dinyatakan <b>TIDAK LOLOS</b>.<br><br>
-            Semoga sukses di kesempatan berikutnya.<br>
-            Salam,<br>
-            HRD
-        ");
-        $email->send();
-
-        return $this->respond([
-            'status' => 'success',
-            'message' => "Pelamar ditandai TIDAK LOLOS & email terkirim ke {$pelamar['email']}"
-        ]);
-    }
-
-    // VIEW berkas pelamar
     public function viewBerkas($id = null)
     {
         $pelamar = $this->model->find($id);
-        if (!$pelamar) {
-            return $this->failNotFound("Pelamar tidak ditemukan");
-        }
+        if (!$pelamar) return $this->failNotFound("Pelamar tidak ditemukan");
 
         $filePath = FCPATH . 'uploads/berkas/' . $pelamar['upload_berkas'];
-        if (!file_exists($filePath)) {
-            return $this->failNotFound("Berkas tidak ditemukan");
-        }
+        if (!file_exists($filePath)) return $this->failNotFound("Berkas tidak ditemukan");
 
         return $this->response
             ->setHeader('Content-Type', mime_content_type($filePath))
@@ -189,18 +232,13 @@ class FormLamaranController extends ResourceController
             ->setBody(file_get_contents($filePath));
     }
 
-    // DOWNLOAD berkas pelamar
     public function downloadBerkas($id = null)
     {
         $pelamar = $this->model->find($id);
-        if (!$pelamar) {
-            return $this->failNotFound("Pelamar tidak ditemukan");
-        }
+        if (!$pelamar) return $this->failNotFound("Pelamar tidak ditemukan");
 
         $filePath = FCPATH . 'uploads/berkas/' . $pelamar['upload_berkas'];
-        if (!file_exists($filePath)) {
-            return $this->failNotFound("Berkas tidak ditemukan");
-        }
+        if (!file_exists($filePath)) return $this->failNotFound("Berkas tidak ditemukan");
 
         return $this->response->download($filePath, null);
     }
