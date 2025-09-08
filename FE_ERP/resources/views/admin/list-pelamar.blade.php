@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,15 +10,40 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #e5e7eb; }
-        .status-label { padding: 0.25rem 0.75rem; border-radius: 9999px; font-weight: 500; color: #fff; }
-        .status-on-progress-label { background-color: #3b82f6; }
-        .status-diterima-label { background-color: #21CA57; }
-        .status-ditolak-label { background-color: #ef4444; }
-        .status-pending-label { background-color: #f59e0b; }
-        .status-pool-label { background-color: #6366f1; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e5e7eb;
+        }
+
+        .status-label {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .status-on-progress-label {
+            background-color: #3b82f6;
+        }
+
+        .status-diterima-label {
+            background-color: #21CA57;
+        }
+
+        .status-ditolak-label {
+            background-color: #ef4444;
+        }
+
+        .status-pending-label {
+            background-color: #f59e0b;
+        }
+
+        .status-pool-label {
+            background-color: #6366f1;
+        }
     </style>
 </head>
+
 <body class="bg-gray-200">
     <!-- Header -->
     <div class="bg-[#072A75] text-white p-4 flex justify-between items-center shadow-lg">
@@ -58,18 +84,18 @@
                 </thead>
                 <tbody>
                     @foreach($groupedPelamar['on_progress'] as $p)
-                        @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
-                        <tr>
-                            <td>{{ $p['nama_pelamar'] ?? '-' }}</td>
-                            <td>{{ $p['posisi_dilamar'] ?? '-' }}</td>
-                            <td class="space-x-1">
-                                <button class="bg-green-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','{{ $p['nama_pelamar'] }}','{{ $p['posisi_dilamar'] }}','lolos')">Accept</button>
-                                <button class="bg-red-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','{{ $p['nama_pelamar'] }}','{{ $p['posisi_dilamar'] }}','tidak_lolos')">Reject</button>
-                                <button class="bg-indigo-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','{{ $p['nama_pelamar'] }}','{{ $p['posisi_dilamar'] }}','talent_pool')">Pool</button>
-                            </td>
-                            <td><span class="status-label status-on-progress-label">On Progress</span></td>
-                            <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
-                        </tr>
+                    @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
+                    <tr>
+                        <td>{{ $p['nama_pelamar'] ?? '-' }}</td>
+                        <td>{{ $p['posisi_dilamar'] ?? '-' }}</td>
+                        <td class="space-x-1">
+                            <button class="bg-green-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','{{ $p['nama_pelamar'] }}','{{ $p['posisi_dilamar'] }}','lolos')">Accept</button>
+                            <button class="bg-red-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','{{ $p['nama_pelamar'] }}','{{ $p['posisi_dilamar'] }}','tidak_lolos')">Reject</button>
+                            <button class="bg-indigo-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','{{ $p['nama_pelamar'] }}','{{ $p['posisi_dilamar'] }}','talent_pool')">Pool</button>
+                        </td>
+                        <td><span class="status-label status-on-progress-label">On Progress</span></td>
+                        <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
+                    </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -90,16 +116,17 @@
                 </thead>
                 <tbody>
                     @foreach($groupedPelamar['pending'] as $p)
-                        @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
-                        <tr>
-                            <td>{{ $p['nama_pelamar'] }}</td>
-                            <td>{{ $p['posisi_dilamar'] }}</td>
-                            <td>
-                                <button class="bg-blue-500 text-white px-2 py-1 rounded" onclick="backToProcess('{{ $pid }}')">Kembali ke Proses</button>
-                            </td>
-                            <td><span class="status-label status-pending-label">Belum Sesuai</span></td>
-                            <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
-                        </tr>
+                    @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
+                    <tr>
+                        <td>{{ $p['nama_pelamar'] }}</td>
+                        <td>{{ $p['posisi_dilamar'] }}</td>
+                        <td class="space-x-1">
+                            <button class="bg-blue-500 text-white px-2 py-1 rounded" onclick="backToProcess('{{ $pid }}')">Kembali ke Proses</button>
+                            <button class="bg-yellow-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','{{ $p['nama_pelamar'] }}','{{ $p['posisi_dilamar'] }}','belum_sesuai')">Pending</button>
+                        </td>
+                        <td><span class="status-label status-pending-label">Belum Sesuai</span></td>
+                        <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
+                    </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -120,16 +147,16 @@
                 </thead>
                 <tbody>
                     @foreach($groupedPelamar['talent_pool'] as $p)
-                        @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
-                        <tr>
-                            <td>{{ $p['nama_pelamar'] }}</td>
-                            <td>{{ $p['posisi_dilamar'] }}</td>
-                            <td>
-                                <button class="bg-blue-500 text-white px-2 py-1 rounded" onclick="backToProcess('{{ $pid }}')">Kembali ke Proses</button>
-                            </td>
-                            <td><span class="status-label status-pool-label">Talent Pool</span></td>
-                            <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
-                        </tr>
+                    @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
+                    <tr>
+                        <td>{{ $p['nama_pelamar'] }}</td>
+                        <td>{{ $p['posisi_dilamar'] }}</td>
+                        <td>
+                            <button class="bg-blue-500 text-white px-2 py-1 rounded" onclick="backToProcess('{{ $pid }}')">Kembali ke Proses</button>
+                        </td>
+                        <td><span class="status-label status-pool-label">Talent Pool</span></td>
+                        <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
+                    </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -149,13 +176,13 @@
                 </thead>
                 <tbody>
                     @foreach($groupedPelamar['lolos'] as $p)
-                        @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
-                        <tr>
-                            <td>{{ $p['nama_pelamar'] }}</td>
-                            <td>{{ $p['posisi_dilamar'] }}</td>
-                            <td><span class="status-label status-diterima-label">Diterima</span></td>
-                            <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
-                        </tr>
+                    @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
+                    <tr>
+                        <td>{{ $p['nama_pelamar'] }}</td>
+                        <td>{{ $p['posisi_dilamar'] }}</td>
+                        <td><span class="status-label status-diterima-label">Diterima</span></td>
+                        <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
+                    </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -175,13 +202,13 @@
                 </thead>
                 <tbody>
                     @foreach($groupedPelamar['tidak_lolos'] as $p)
-                        @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
-                        <tr>
-                            <td>{{ $p['nama_pelamar'] }}</td>
-                            <td>{{ $p['posisi_dilamar'] }}</td>
-                            <td><span class="status-label status-ditolak-label">Ditolak</span></td>
-                            <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
-                        </tr>
+                    @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
+                    <tr>
+                        <td>{{ $p['nama_pelamar'] }}</td>
+                        <td>{{ $p['posisi_dilamar'] }}</td>
+                        <td><span class="status-label status-ditolak-label">Ditolak</span></td>
+                        <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
+                    </tr>
                     @endforeach
                 </tbody>
             </table>
@@ -224,7 +251,8 @@
             $('#pelamarId').val(id);
             $('#status').val(status);
 
-            let subject = '', message = '';
+            let subject = '',
+                message = '';
             switch (status) {
                 case 'lolos':
                     subject = "Selamat! Anda Lolos Tahap Seleksi";
@@ -238,6 +266,11 @@
                     subject = `Lamaran Anda Masuk Talent Pool - ${posisi}`;
                     message = `Terima kasih ${nama} atas lamaran Anda untuk posisi ${posisi}.\nProfil Anda kami simpan ke dalam *Talent Pool* dan akan kami hubungi apabila ada posisi yang sesuai di kemudian hari.\n\nHormat kami,\nTim HRD.`;
                     break;
+                case 'belum_sesuai':
+                    subject = `Lamaran Anda Belum Sesuai - ${posisi}`;
+                    message = `Yth. ${nama},\n\nTerima kasih atas lamaran Anda untuk posisi ${posisi}.\nSaat ini kualifikasi Anda *belum sesuai* dengan kebutuhan kami.\nNamun, jangan ragu untuk melamar kembali di kesempatan berikutnya.\n\nHormat kami,\nTim HRD`;
+                    break;
+
             }
 
             $('#subject').val(subject);
@@ -296,4 +329,5 @@
         }
     </script>
 </body>
+
 </html>
