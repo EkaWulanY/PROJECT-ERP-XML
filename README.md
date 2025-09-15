@@ -75,12 +75,6 @@ database.default.DBDriver = MySQLi
 database.default.port = 3306
 ```
 
-Buat database di MySQL:
-
-sql
-DOWNLOAD DATABASE erp;
-
-https://drive.google.com/drive/folders/1maGo2OPWKnthGrc0wdVUXsl3_Ihe0sLg?usp=drive_link
 ```
 
 ### 🔹 Email (SMTP Gmail)
