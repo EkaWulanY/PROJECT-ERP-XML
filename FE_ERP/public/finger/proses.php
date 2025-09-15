@@ -9,65 +9,30 @@ function Parse_Data($data, $p1, $p2){
     return $hasil;
 }
 
-$IP     = $_GET['finger'] ?? $_POST['finger'] ?? '';
-$userid = $_GET['userid'] ?? $_POST['userid'] ?? '';
-$bulan  = $_GET['bulan'] ?? $_POST['bulan'] ?? '';
-$tahun  = $_GET['tahun'] ?? $_POST['tahun'] ?? '';
-$Key    = "0";
+$IP        = $_GET['finger'] ?? $_POST['finger'] ?? '';
+$userid    = $_GET['userid'] ?? $_POST['userid'] ?? '';
+$bulan     = $_GET['bulan'] ?? $_POST['bulan'] ?? '';
+$tahun     = $_GET['tahun'] ?? $_POST['tahun'] ?? '';
+$start_date= $_GET['start_date'] ?? $_POST['start_date'] ?? '';
+$end_date  = $_GET['end_date'] ?? $_POST['end_date'] ?? '';
+$Key       = "0";
 
-
-// 🔹 FUNGSI CETAK DATA (supaya bisa dipakai web & excel)
-function printAbsensi($logData, $userNames, $mode = "html"){
-    foreach($logData as $PIN => $dates){
-        $Name = $userNames[$PIN] ?? "";
-        foreach($dates as $tanggal => $times){
-            sort($times);
-            $count = count($times);
-
-            for($i=0; $i<$count; $i+=2){
-                $in  = $times[$i];
-                if(isset($times[$i+1]) && $times[$i+1] != $in){
-                    $out = $times[$i+1];
-                } else {
-                    $out = ""; // biar kosong, bukan sama dengan in
-                }
-
-                if($mode == "html"){
-                    echo "<tr>
-                            <td>{$PIN}</td>
-                            <td>{$Name}</td>
-                            <td>{$tanggal}</td>
-                            <td>{$in}</td>
-                            <td>{$out}</td>
-                          </tr>";
-                } else { // excel
-                    echo "<tr>
-                            <td>{$PIN}</td>
-                            <td>{$Name}</td>
-                            <td>{$tanggal}</td>
-                            <td>{$in}</td>
-                            <td>{$out}</td>
-                          </tr>";
-                }
-            }
-        }
-    }
-}
-
-
-// ==================== EXPORT KE EXCEL ====================
 if(isset($_POST['export']) && $_POST['export'] == 'excel'){
+    // Simple Excel export using HTML table format
     $filename = "Data_Absensi_" . date('Y-m-d_H-i-s') . ".xls";
+    
     header('Content-Type: application/vnd.ms-excel');
     header('Content-Disposition: attachment;filename="' . $filename . '"');
     header('Cache-Control: max-age=0');
-
-    echo '<html><head><meta charset="UTF-8"></head><body>';
+    
+    echo '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+    echo '<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head>';
+    echo '<body>';
     echo '<table border="1">';
-    echo '<tr><th>UserID</th><th>Nama</th><th>Tanggal</th><th>In</th><th>Out</th></tr>';
-
+    echo '<tr><th>UserID</th><th>Nama</th><th>Tanggal</th><th>IN</th><th>OUT</th><th>IN</th><th>OUT</th><th>IN</th><th>OUT</th></tr>';
+    
     if($IP!="" && $IP!="0"){
-        // ambil user
+        // 🔹 Ambil data user
         $userNames = [];
         $ConnectUser = @fsockopen($IP,80,$errno,$errstr,1);
         if($ConnectUser){
@@ -90,7 +55,7 @@ if(isset($_POST['export']) && $_POST['export'] == 'excel'){
             }
         }
 
-        // ambil log
+        // 🔹 Ambil log absensi
         $Connect = @fsockopen($IP,80,$errno,$errstr,1);
         $logData = [];
         if($Connect){
@@ -114,12 +79,17 @@ if(isset($_POST['export']) && $_POST['export'] == 'excel'){
 
                     $pass = true;
                     if($userid!="" && $PIN!=$userid) $pass=false;
-                    if($bulan!="" || $tahun!=""){
+                    if(($bulan!="" || $tahun!="") && $DateTime!=""){
                         $tgl = strtotime($DateTime);
                         $blnLog = date("n", $tgl);
                         $thnLog = date("Y", $tgl);
                         if($bulan!="" && (int)$blnLog != (int)$bulan) $pass=false;
                         if($tahun!="" && $thnLog != $tahun) $pass=false;
+                    }
+                    if(($start_date!="" || $end_date!="") && $DateTime!=""){
+                        $tglOnly = date("Y-m-d", strtotime($DateTime));
+                        if($start_date!="" && $tglOnly < $start_date) $pass = false;
+                        if($end_date!="" && $tglOnly > $end_date) $pass = false;
                     }
 
                     if($pass && $PIN && $DateTime){
@@ -131,15 +101,32 @@ if(isset($_POST['export']) && $_POST['export'] == 'excel'){
             }
         }
 
-        if(!empty($logData)) printAbsensi($logData, $userNames, "excel");
+        // 🔹 Output ke Excel (1 baris per tanggal, banyak IN/OUT)
+        if(!empty($logData)){
+            foreach($logData as $PIN => $dates){
+                $Name = $userNames[$PIN] ?? "";
+                foreach($dates as $tanggal => $times){
+                    sort($times);
+                    echo "<tr>
+                            <td>{$PIN}</td>
+                            <td>{$Name}</td>
+                            <td>{$tanggal}</td>";
+                    for ($i=0; $i<3; $i++) { // maksimal 3 pasang IN-OUT
+                        $in  = $times[$i*2]   ?? "";
+                        $out = $times[$i*2+1] ?? "";
+                        echo "<td>{$in}</td><td>{$out}</td>";
+                    }
+                    echo "</tr>";
+                }
+            }
+        }
     }
-
-    echo '</table></body></html>';
+    
+    echo '</table>';
+    echo '</body></html>';
     exit;
 }
 
-
-// ==================== UNTUK DROPDOWN USERS ====================
 if(isset($_GET['mode']) && $_GET['mode']=='users'){
     $Connect = @fsockopen($IP,80,$errno,$errstr,1);
     $options = "<option value=''>Semua</option>";
@@ -166,8 +153,7 @@ if(isset($_GET['mode']) && $_GET['mode']=='users'){
     exit;
 }
 
-
-// ==================== TAMPILAN HASIL KE WEB ====================
+// 🔹 Tampilkan di browser
 if($IP!="" && $IP!="0"){
     echo '<div class="table-responsive">
             <table class="table table-bordered table-striped align-middle text-center">
@@ -175,11 +161,15 @@ if($IP!="" && $IP!="0"){
               <th>UserID</th>
               <th>Nama</th>
               <th>Tanggal</th>
-              <th>In</th>
-              <th>Out</th>
+              <th>IN</th>
+              <th>OUT</th>
+              <th>IN</th>
+              <th>OUT</th>
+              <th>IN</th>
+              <th>OUT</th>
             </tr></thead><tbody>';
 
-    // ambil user
+    // Ambil user untuk mapping
     $userNames = [];
     $ConnectUser = @fsockopen($IP,80,$errno,$errstr,1);
     if($ConnectUser){
@@ -202,7 +192,7 @@ if($IP!="" && $IP!="0"){
         }
     }
 
-    // ambil log
+    // Ambil log absensi
     $Connect = @fsockopen($IP,80,$errno,$errstr,1);
     $logData = [];
     if($Connect){
@@ -233,6 +223,11 @@ if($IP!="" && $IP!="0"){
                     if($bulan!="" && (int)$blnLog != (int)$bulan) $pass=false;
                     if($tahun!="" && $thnLog != $tahun) $pass=false;
                 }
+                if(($start_date!="" || $end_date!="") && $DateTime!=""){
+                    $tglOnly = date("Y-m-d", strtotime($DateTime));
+                    if($start_date!="" && $tglOnly < $start_date) $pass = false;
+                    if($end_date!="" && $tglOnly > $end_date) $pass = false;
+                }
 
                 if($pass && $PIN && $DateTime){
                     $tanggal = date("Y-m-d", strtotime($DateTime));
@@ -242,13 +237,29 @@ if($IP!="" && $IP!="0"){
             }
         }
     } else {
-        echo "<tr><td colspan='5' class='text-danger'>Koneksi Gagal ke Mesin Fingerprint</td></tr>";
+        echo "<tr><td colspan='9' class='text-danger'>Koneksi Gagal ke Mesin Fingerprint</td></tr>";
     }
 
+    // Cetak hasil
     if(empty($logData)){
-        echo "<tr><td colspan='5' class='text-center text-danger'>Data Kosong</td></tr>";
+        echo "<tr><td colspan='9' class='text-center text-danger'>Data Kosong</td></tr>";
     } else {
-        printAbsensi($logData, $userNames, "html");
+        foreach($logData as $PIN => $dates){
+            $Name = $userNames[$PIN] ?? "";
+            foreach($dates as $tanggal => $times){
+                sort($times);
+                echo "<tr>
+                        <td>{$PIN}</td>
+                        <td>{$Name}</td>
+                        <td>{$tanggal}</td>";
+                for ($i=0; $i<3; $i++) { // maksimal 3 pasang IN-OUT
+                    $in  = $times[$i*2]   ?? "";
+                    $out = $times[$i*2+1] ?? "";
+                    echo "<td>{$in}</td><td>{$out}</td>";
+                }
+                echo "</tr>";
+            }
+        }
     }
 
     echo '</tbody></table></div>';

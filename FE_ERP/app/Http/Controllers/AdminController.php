@@ -48,19 +48,29 @@ class AdminController extends Controller
         $validated = $request->validate([
             'posisi'         => 'required|string|max:255',
             'deskripsi'      => 'required|string',
-            'jobdesk'        => 'required|string',
-            'kualifikasi'    => 'required|string',
+            'jobdesk'        => 'nullable|string',
+            'kualifikasi'    => 'nullable|string',
             'lokasi'         => 'required|string|max:255',
             'status'         => 'nullable|string|in:aktif,nonaktif',
             'tanggal_post'   => 'required|date',
             'pendidikan_min' => 'nullable|string|max:255',
             'batas_lamaran'  => 'nullable|date',
-            'image_url'      => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+            'image_url'      => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'range_gaji'     => 'nullable|string|max:255',
+            'custom_gaji'    => 'nullable|string|max:255',
+            'show_gaji'      => 'nullable|boolean',
         ]);
 
-        $payload = $validated;
-        $payload['status'] = $validated['status'] ?? 'aktif';
+        // handle range gaji (dropdown atau custom)
+        $payload = collect($validated)->except(['image_url', 'custom_gaji'])->toArray();
+        $payload['range_gaji'] = $validated['range_gaji'] === 'custom'
+            ? ($validated['custom_gaji'] ?? null)
+            : $validated['range_gaji'];
 
+        $payload['status'] = $payload['status'] ?? 'aktif';
+        $payload['show_gaji'] = $request->has('show_gaji') ? 1 : 0;
+
+        // handle image upload
         if ($request->hasFile('image_url')) {
             $path = $request->file('image_url')->store('jobs', 'public');
             $payload['image_url'] = asset('storage/' . $path);
@@ -94,21 +104,63 @@ class AdminController extends Controller
         $validated = $request->validate([
             'posisi'         => 'required|string|max:255',
             'deskripsi'      => 'required|string',
-            'jobdesk'        => 'required|string',
-            'kualifikasi'    => 'required|string',
+            'jobdesk'        => 'nullable|string',
+            'kualifikasi'    => 'nullable|string',
             'lokasi'         => 'required|string|max:255',
             'status'         => 'nullable|string|in:aktif,nonaktif',
             'tanggal_post'   => 'required|date',
             'pendidikan_min' => 'nullable|string|max:255',
             'batas_lamaran'  => 'nullable|date',
+            'image_url'      => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'range_gaji'     => 'nullable|string|max:255',
+            'custom_gaji'    => 'nullable|string|max:255',
+            'show_gaji'      => 'nullable|boolean',
         ]);
 
         try {
-            Http::put("{$this->baseUrl}/api/jobs/{$id}", $validated)->throw();
-            return redirect()->route('admin.jobs.list')->with('success', 'Job berhasil diperbarui.');
+            $existingJob = Http::get("{$this->baseUrl}/api/jobs/{$id}")->throw()->json();
+        } catch (\Exception $e) {
+            Log::error("Error fetching existing job {$id}: " . $e->getMessage());
+            return back()->with('error', 'Gagal mengambil data job yang sudah ada.');
+        }
+
+        $payload = [
+            'posisi'         => $validated['posisi'],
+            'deskripsi'      => $validated['deskripsi'],
+            'jobdesk'        => $validated['jobdesk'],
+            'kualifikasi'    => $validated['kualifikasi'],
+            'lokasi'         => $validated['lokasi'],
+            'status'         => $validated['status'] ?? 'nonaktif',
+            'tanggal_post'   => $validated['tanggal_post'],
+            'pendidikan_min' => $validated['pendidikan_min'],
+            'batas_lamaran'  => $validated['batas_lamaran'],
+            'range_gaji'     => $validated['range_gaji'] === 'custom'
+                ? ($validated['custom_gaji'] ?? null)
+                : $validated['range_gaji'],
+            'show_gaji'      => $request->has('show_gaji') ? 1 : 0,
+        ];
+
+        // handle image update
+        if ($request->hasFile('image_url')) {
+            // hapus file lama kalau ada
+            if (!empty($existingJob['image_url'])) {
+                $oldPath = str_replace(asset('storage/'), '', $existingJob['image_url']);
+                if (Storage::disk('public')->exists($oldPath)) {
+                    Storage::disk('public')->delete($oldPath);
+                }
+            }
+            $path = $request->file('image_url')->store('jobs', 'public');
+            $payload['image_url'] = asset('storage/' . $path);
+        } else {
+            $payload['image_url'] = $existingJob['image_url'] ?? null;
+        }
+
+        try {
+            Http::put("{$this->baseUrl}/api/jobs/{$id}", $payload)->throw();
+            return redirect()->route('admin.jobs.list')->with('success', 'Lowongan berhasil diperbarui.');
         } catch (\Exception $e) {
             Log::error("Error updating job {$id}: " . $e->getMessage());
-            return back()->with('error', 'Gagal memperbarui job.');
+            return back()->withInput()->with('error', 'Gagal memperbarui lowongan.');
         }
     }
 
@@ -191,10 +243,13 @@ class AdminController extends Controller
                     ?? $p['full_name']
                     ?? 'Tidak diketahui';
 
+                // 🔥 FIX: jangan override status jika sudah manual jadi "proses"
                 if ($job) {
                     $minEdu = $rank[$job['pendidikan_min']] ?? 0;
                     $appEdu = $rank[$p['pendidikan_terakhir']] ?? 0;
-                    if ($appEdu < $minEdu) {
+
+                    // hanya tandai "belum_sesuai" kalau status asli masih kosong / bukan 'proses'
+                    if ($appEdu < $minEdu && ($p['status'] ?? '') !== 'proses') {
                         $pelamar[$key]['status'] = 'belum_sesuai';
                     }
                 }
@@ -208,7 +263,8 @@ class AdminController extends Controller
                 'tidak_lolos' => [],
             ];
             foreach ($pelamar as $p) {
-                switch ($p['status'] ?? 'proses') {
+                $status = $p['status'] ?? 'proses';
+                switch ($status) {
                     case 'belum_sesuai':
                         $groupedPelamar['pending'][] = $p;
                         break;
@@ -221,6 +277,7 @@ class AdminController extends Controller
                     case 'tidak_lolos':
                         $groupedPelamar['tidak_lolos'][] = $p;
                         break;
+                    case 'proses': // 🔥 tambahan supaya jelas mapping
                     default:
                         $groupedPelamar['on_progress'][] = $p;
                         break;
@@ -239,6 +296,7 @@ class AdminController extends Controller
 
         return view('admin.list-pelamar', compact('groupedPelamar'));
     }
+
 
     public function updateStatusPelamar(Request $request, $id)
     {
@@ -311,8 +369,26 @@ class AdminController extends Controller
 
     public function backToProcess(Request $request, $id)
     {
-        return $this->updateStatusPelamar(new Request(['status' => 'proses']), $id);
+        try {
+            $response = Http::withBody(json_encode(['status' => 'proses']), 'application/json')
+                ->put("{$this->baseUrl}/api/pelamar/{$id}/updateStatus");
+
+            if ($response->successful()) {
+                return response()->json([
+                    'message' => 'Pelamar berhasil dikembalikan ke On Progress'
+                ]);
+            }
+
+            return response()->json([
+                'message' => 'Gagal mengubah status pelamar'
+            ], 500);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error: ' . $e->getMessage()
+            ], 500);
+        }
     }
+
 
     /** view detail pelamar */
     public function viewPelamar($id)
@@ -327,6 +403,16 @@ class AdminController extends Controller
         }
 
         return view('admin.view-pelamar', compact('pelamar', 'pengalaman'));
+    }
+    public function deletePelamar($id)
+    {
+        try {
+            Http::delete("{$this->baseUrl}/api/pelamar/{$id}")->throw();
+            return redirect()->route('admin.pelamar.list')->with('success', 'Pelamar berhasil dihapus.');
+        } catch (\Exception $e) {
+            Log::error("Error deleting pelamar {$id}: " . $e->getMessage());
+            return redirect()->route('admin.pelamar.list')->with('error', 'Gagal menghapus pelamar.');
+        }
     }
 
     /* ==========================================================

@@ -23,10 +23,12 @@ class Job extends Model
         'deskripsi',
         'kualifikasi',
         'jobdesk',
+        'range_gaji',
+        'show_gaji',
         'image_url',
         'tanggal_post',
         'batas_lamaran',
-        'status',
+        'status'
     ];
 
     protected $casts = [

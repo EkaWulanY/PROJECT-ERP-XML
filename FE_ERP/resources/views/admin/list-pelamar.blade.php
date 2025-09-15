@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -41,181 +41,382 @@
         .status-pool-label {
             background-color: #6366f1;
         }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background-color: #072A75;
+            color: white;
+            padding-top: 2rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(0);
+        }
+
+        .content-area {
+            margin-left: 250px;
+        }
+
+        .sidebar a {
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            border-left: 4px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .sidebar a:hover {
+            background-color: #1a4294;
+            border-left-color: #ffffff;
+        }
+
+        .dropdown-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .dropdown-menu.active {
+            max-height: 200px;
+            transition: max-height 0.5s ease-in;
+        }
+
+        .dropdown-item {
+            padding-left: 3.5rem;
+            /* Indent for dropdown items */
+            font-weight: normal;
+        }
     </style>
 </head>
 
-<body class="bg-gray-200">
-    <!-- Header -->
-    <div class="bg-[#072A75] text-white p-4 flex justify-between items-center shadow-lg">
-        <div class="flex items-center">
-            <img src="{{ asset('admin/img/logo.jpg') }}" alt="Logo" class="h-8 w-8 mr-2 rounded-full">
+<body class="bg-gray-200 flex">
+    <div class="sidebar flex flex-col items-center">
+        <div class="flex items-center mb-10 px-4">
+            <img src="{{ asset('admin/img/logo.jpg') }}" alt="Logo" class="h-10 w-10 mr-3 rounded-full">
             <span class="text-xl font-bold">Sistem ERP HR</span>
         </div>
-        <div class="flex items-center">
-            <span class="mr-2">Admin</span>
-            <svg class="h-8 w-8 rounded-full border-2 border-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A7.962 7.962 0 0112 15a7.962 7.962 0 016.879 2.804M15 11a3 3 0 11-6 0 3 0 016 0z" />
-            </svg>
+
+        <nav class="w-full">
+            <a href="{{ route('admin.dashboard') }}" class="px-6">
+                <i class="fa-solid fa-house-chimney mr-3"></i>Dashboard
+            </a>
+            <a href="#" class="flex justify-between items-center px-6" id="lamaran-dropdown-btn">
+                <span>
+                    <i class="fa-solid fa-briefcase mr-3"></i>Lamaran Kerja
+                </span>
+                <i class="fa-solid fa-caret-down"></i>
+            </a>
+            <div class="dropdown-menu" id="lamaran-dropdown">
+                <a href="{{ route('admin.jobs.list') }}" class="dropdown-item">
+                    <i class="fa-solid fa-list-check mr-3"></i>List Job
+                </a>
+                <a href="{{ route('admin.pelamar.list') }}" class="dropdown-item">
+                    <i class="fa-solid fa-users mr-3"></i>Data Pelamar
+                </a>
+                <a href="{{ route('admin.form.lamaran') }}" class="dropdown-item">
+                    <i class="fa-solid fa-file-pen mr-3"></i>Edit Form Daftar
+                </a>
+                <a href="{{ route('admin.qrcode') }}" class="dropdown-item">
+                    <i class="fa-solid fa-qrcode mr-3"></i>Generate QR
+                </a>
+            </div>
+            <a href="{{ asset('finger/finger.php') }}" class="px-6">
+                <i class="fa-solid fa-fingerprint mr-3"></i>Absensi
+            </a>
+        </nav>
+    </div>
+
+    <div class="flex-grow content-area">
+        <div class="bg-[#072A75] text-white p-4 flex justify-end items-center shadow-lg">
+            <div class="flex items-center">
+                <span class="mr-2">Admin</span>
+                <svg class="h-8 w-8 rounded-full border-2 border-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A7.962 7.962 0 0112 15a7.962 7.962 0 016.879 2.804M15 11a3 3 0 11-6 0 3 0 016 0z" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="container mx-auto p-8 space-y-12">
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Daftar Pelamar (On Progress)</h2>
+                <table id="pelamar-table" class="display min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Nama Pelamar</th>
+                            <th>Posisi Dilamar</th>
+                            <th>Aksi</th>
+                            <th>Status</th>
+                            <th>Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($groupedPelamar['on_progress'] as $p)
+                        @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
+                        <tr>
+                            <td>{{ $p['nama_pelamar'] ?? '-' }}</td>
+                            <td>{{ $p['posisi_dilamar'] ?? '-' }}</td>
+                            <td class="space-x-1">
+                                <button class="bg-green-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','{{ $p['nama_pelamar'] }}','{{ $p['posisi_dilamar'] }}','lolos')">Accept</button>
+                                <button class="bg-red-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','{{ $p['nama_pelamar'] }}','{{ $p['posisi_dilamar'] }}','tidak_lolos')">Reject</button>
+                                <button class="bg-indigo-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','{{ $p['nama_pelamar'] }}','{{ $p['posisi_dilamar'] }}','talent_pool')">Pool</button>
+                            </td>
+                            <td><span class="status-label status-on-progress-label">On Progress</span></td>
+                            <td><a href="{{ route('admin.pelamar.view', $pid) }}"
+                                    class="bg-blue-500 text-white px-2 py-1 rounded inline-flex items-center justify-center"
+                                    title="Lihat Detail">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 
+                                                    5c4.477 0 8.268 2.943 9.542 
+                                                    7-1.274 4.057-5.065 7-9.542 
+                                                    7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Pending</h2>
+                <table id="pending-table" class="display min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Posisi</th>
+                            <th>Aksi</th>
+                            <th>Status</th>
+                            <th>Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($groupedPelamar['pending'] as $p)
+                        @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
+                        <tr>
+                            <td>{{ $p['nama_pelamar'] }}</td>
+                            <td>{{ $p['posisi_dilamar'] }}</td>
+                            <td class="space-x-1">
+                                <button class="bg-blue-500 text-white px-2 py-1 rounded" onclick="backToProcess('{{ $pid }}')">Kembali ke Proses</button>
+
+                                <button class="bg-yellow-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','{{ $p['nama_pelamar'] }}','{{ $p['posisi_dilamar'] }}','belum_sesuai')">Pending</button>
+                            </td>
+                            <td><span class="status-label status-pending-label">Belum Sesuai</span></td>
+                            <td>
+                                <div class="flex items-center space-x-2">
+                                    <!-- Tombol View -->
+                                    <a href="{{ route('admin.pelamar.view', $pid) }}"
+                                        class="bg-blue-500 text-white px-2 py-1 rounded inline-flex items-center justify-center"
+                                        title="Lihat Detail">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 
+                       5c4.477 0 8.268 2.943 9.542 
+                       7-1.274 4.057-5.065 7-9.542 
+                       7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </a>
+
+                                    <!-- Tombol Hapus -->
+                                    <form action="{{ route('admin.pelamar.delete', $pid) }}" method="POST"
+                                        onsubmit="return confirm('Yakin mau hapus pelamar ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="bg-red-600 text-white px-2 py-1 rounded inline-flex items-center justify-center"
+                                            title="Hapus Pelamar">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Talent Pool</h2>
+                <table id="pool-table" class="display min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Posisi</th>
+                            <th>Aksi</th>
+                            <th>Status</th>
+                            <th>Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($groupedPelamar['talent_pool'] as $p)
+                        @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
+                        <tr>
+                            <td>{{ $p['nama_pelamar'] }}</td>
+                            <td>{{ $p['posisi_dilamar'] }}</td>
+                            <td>
+                                <button class="bg-blue-500 text-white px-2 py-1 rounded" onclick="backToProcess('{{ $pid }}')">Kembali ke Proses</button>
+                            </td>
+                            <td><span class="status-label status-pool-label">Talent Pool</span></td>
+                            <td>
+                                <div class="flex items-center space-x-2">
+                                    <!-- Tombol View -->
+                                    <a href="{{ route('admin.pelamar.view', $pid) }}"
+                                        class="bg-blue-500 text-white px-2 py-1 rounded inline-flex items-center justify-center"
+                                        title="Lihat Detail">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 
+                       5c4.477 0 8.268 2.943 9.542 
+                       7-1.274 4.057-5.065 7-9.542 
+                       7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </a>
+
+                                    <!-- Tombol Hapus -->
+                                    <form action="{{ route('admin.pelamar.delete', $pid) }}" method="POST"
+                                        onsubmit="return confirm('Yakin mau hapus pelamar ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="bg-red-600 text-white px-2 py-1 rounded inline-flex items-center justify-center"
+                                            title="Hapus Pelamar">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Diterima</h2>
+                <table id="accept-table" class="display min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Posisi</th>
+                            <th>Status</th>
+                            <th>Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($groupedPelamar['lolos'] as $p)
+                        @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
+                        <tr>
+                            <td>{{ $p['nama_pelamar'] }}</td>
+                            <td>{{ $p['posisi_dilamar'] }}</td>
+                            <td><span class="status-label status-diterima-label">Diterima</span></td>
+                            <td>
+                                <div class="flex items-center space-x-2">
+                                    <!-- Tombol View -->
+                                    <a href="{{ route('admin.pelamar.view', $pid) }}"
+                                        class="bg-blue-500 text-white px-2 py-1 rounded inline-flex items-center justify-center"
+                                        title="Lihat Detail">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 
+                       5c4.477 0 8.268 2.943 9.542 
+                       7-1.274 4.057-5.065 7-9.542 
+                       7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </a>
+
+                                    <!-- Tombol Hapus -->
+                                    <form action="{{ route('admin.pelamar.delete', $pid) }}" method="POST"
+                                        onsubmit="return confirm('Yakin mau hapus pelamar ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="bg-red-600 text-white px-2 py-1 rounded inline-flex items-center justify-center"
+                                            title="Hapus Pelamar">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Ditolak</h2>
+                <table id="reject-table" class="display min-w-full">
+                    <thead>
+                        <tr>
+                            <th>Nama</th>
+                            <th>Posisi</th>
+                            <th>Status</th>
+                            <th>Detail</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($groupedPelamar['tidak_lolos'] as $p)
+                        @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
+                        <tr>
+                            <td>{{ $p['nama_pelamar'] }}</td>
+                            <td>{{ $p['posisi_dilamar'] }}</td>
+                            <td><span class="status-label status-ditolak-label">Ditolak</span></td>
+                            <td>
+                                <div class="flex items-center space-x-2">
+                                    <!-- Tombol View -->
+                                    <a href="{{ route('admin.pelamar.view', $pid) }}"
+                                        class="bg-blue-500 text-white px-2 py-1 rounded inline-flex items-center justify-center"
+                                        title="Lihat Detail">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 
+                       5c4.477 0 8.268 2.943 9.542 
+                       7-1.274 4.057-5.065 7-9.542 
+                       7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </a>
+
+                                    <!-- Tombol Hapus -->
+                                    <form action="{{ route('admin.pelamar.delete', $pid) }}" method="POST"
+                                        onsubmit="return confirm('Yakin mau hapus pelamar ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="bg-red-600 text-white px-2 py-1 rounded inline-flex items-center justify-center"
+                                            title="Hapus Pelamar">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <div class="container mx-auto p-8 space-y-12">
-        <!-- Menu -->
-        <div class="flex justify-center space-x-4 mb-8">
-            <a href="{{ route('admin.jobs.list') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:bg-purple-400">List Job</a>
-            <a href="{{ route('admin.pelamar.list') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:bg-purple-400">Data Pelamar</a>
-            <a href="{{ route('admin.form.lamaran') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:bg-purple-400">Edit Form Daftar</a>
-            <a href="{{ route('admin.qrcode') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:bg-purple-400">Generate QR</a>
-            <a href="{{ asset('finger/finger.php') }}" class="bg-purple-300 text-white font-semibold py-2 px-6 rounded-lg shadow-lg hover:bg-purple-400">Absensi</a>
-        </div>
-
-        <!-- Container On Progress -->
-        <div class="bg-white rounded-2xl shadow-xl p-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Daftar Pelamar (On Progress)</h2>
-            <table id="pelamar-table" class="display min-w-full">
-                <thead>
-                    <tr>
-                        <th>Nama Pelamar</th>
-                        <th>Posisi Dilamar</th>
-                        <th>Aksi</th>
-                        <th>Status</th>
-                        <th>Detail</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($groupedPelamar['on_progress'] as $p)
-                    @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
-                    <tr>
-                        <td>{{ $p['nama_pelamar'] ?? '-' }}</td>
-                        <td>{{ $p['posisi_dilamar'] ?? '-' }}</td>
-                        <td class="space-x-1">
-                            <button class="bg-green-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','{{ $p['nama_pelamar'] }}','{{ $p['posisi_dilamar'] }}','lolos')">Accept</button>
-                            <button class="bg-red-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','{{ $p['nama_pelamar'] }}','{{ $p['posisi_dilamar'] }}','tidak_lolos')">Reject</button>
-                            <button class="bg-indigo-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','{{ $p['nama_pelamar'] }}','{{ $p['posisi_dilamar'] }}','talent_pool')">Pool</button>
-                        </td>
-                        <td><span class="status-label status-on-progress-label">On Progress</span></td>
-                        <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Container Pending -->
-        <div class="bg-white rounded-2xl shadow-xl p-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Pending</h2>
-            <table id="pending-table" class="display min-w-full">
-                <thead>
-                    <tr>
-                        <th>Nama</th>
-                        <th>Posisi</th>
-                        <th>Aksi</th>
-                        <th>Status</th>
-                        <th>Detail</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($groupedPelamar['pending'] as $p)
-                    @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
-                    <tr>
-                        <td>{{ $p['nama_pelamar'] }}</td>
-                        <td>{{ $p['posisi_dilamar'] }}</td>
-                        <td class="space-x-1">
-                            <button class="bg-blue-500 text-white px-2 py-1 rounded" onclick="backToProcess('{{ $pid }}')">Kembali ke Proses</button>
-                            <button class="bg-yellow-500 text-white px-2 py-1 rounded" onclick="openEmailModal('{{ $pid }}','{{ $p['nama_pelamar'] }}','{{ $p['posisi_dilamar'] }}','belum_sesuai')">Pending</button>
-                        </td>
-                        <td><span class="status-label status-pending-label">Belum Sesuai</span></td>
-                        <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Container Pool -->
-        <div class="bg-white rounded-2xl shadow-xl p-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Talent Pool</h2>
-            <table id="pool-table" class="display min-w-full">
-                <thead>
-                    <tr>
-                        <th>Nama</th>
-                        <th>Posisi</th>
-                        <th>Aksi</th>
-                        <th>Status</th>
-                        <th>Detail</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($groupedPelamar['talent_pool'] as $p)
-                    @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
-                    <tr>
-                        <td>{{ $p['nama_pelamar'] }}</td>
-                        <td>{{ $p['posisi_dilamar'] }}</td>
-                        <td>
-                            <button class="bg-blue-500 text-white px-2 py-1 rounded" onclick="backToProcess('{{ $pid }}')">Kembali ke Proses</button>
-                        </td>
-                        <td><span class="status-label status-pool-label">Talent Pool</span></td>
-                        <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Container Diterima -->
-        <div class="bg-white rounded-2xl shadow-xl p-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Diterima</h2>
-            <table id="accept-table" class="display min-w-full">
-                <thead>
-                    <tr>
-                        <th>Nama</th>
-                        <th>Posisi</th>
-                        <th>Status</th>
-                        <th>Detail</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($groupedPelamar['lolos'] as $p)
-                    @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
-                    <tr>
-                        <td>{{ $p['nama_pelamar'] }}</td>
-                        <td>{{ $p['posisi_dilamar'] }}</td>
-                        <td><span class="status-label status-diterima-label">Diterima</span></td>
-                        <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Container Ditolak -->
-        <div class="bg-white rounded-2xl shadow-xl p-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Ditolak</h2>
-            <table id="reject-table" class="display min-w-full">
-                <thead>
-                    <tr>
-                        <th>Nama</th>
-                        <th>Posisi</th>
-                        <th>Status</th>
-                        <th>Detail</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($groupedPelamar['tidak_lolos'] as $p)
-                    @php $pid = $p['id_lamaran'] ?? $p['id'] ?? null; @endphp
-                    <tr>
-                        <td>{{ $p['nama_pelamar'] }}</td>
-                        <td>{{ $p['posisi_dilamar'] }}</td>
-                        <td><span class="status-label status-ditolak-label">Ditolak</span></td>
-                        <td><a href="{{ route('admin.pelamar.view',$pid) }}" class="text-blue-600 hover:underline">View</a></td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Modal Email -->
     <div id="emailModal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
         <div class="bg-white rounded-lg shadow-lg w-1/2 p-6">
             <h2 class="text-xl font-bold mb-4">Kirim Email</h2>
@@ -239,12 +440,19 @@
         </div>
     </div>
 
-    <!-- Script -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script>
         $(document).ready(function() {
             $('#pelamar-table, #pending-table, #pool-table, #accept-table, #reject-table').DataTable();
+
+            const dropdownBtn = document.getElementById('lamaran-dropdown-btn');
+            const dropdownMenu = document.getElementById('lamaran-dropdown');
+
+            dropdownBtn.addEventListener('click', function(event) {
+                event.preventDefault();
+                dropdownMenu.classList.toggle('active');
+            });
         });
 
         function openEmailModal(id, nama, posisi, status) {
@@ -270,7 +478,6 @@
                     subject = `Lamaran Anda Belum Sesuai - ${posisi}`;
                     message = `Yth. ${nama},\n\nTerima kasih atas lamaran Anda untuk posisi ${posisi}.\nSaat ini kualifikasi Anda *belum sesuai* dengan kebutuhan kami.\nNamun, jangan ragu untuk melamar kembali di kesempatan berikutnya.\n\nHormat kami,\nTim HRD`;
                     break;
-
             }
 
             $('#subject').val(subject);
@@ -315,6 +522,7 @@
                 url: `/pelamar/${id}/back`,
                 method: 'POST',
                 data: {
+                    status: 'proses', // 🔥 perbaikan penting
                     _token: $('meta[name="csrf-token"]').attr('content')
                 },
                 success: function(res) {

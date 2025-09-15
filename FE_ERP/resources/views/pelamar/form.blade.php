@@ -88,9 +88,9 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label">Pengetahuan Perusahaan</label>
-                        <input type="text" name="pengetahuan_perusahaan" class="form-control"
-                            placeholder="Pengetahuan" value="{{ old('pengetahuan_perusahaan') }}" required>
+                        <textarea name="pengetahuan_perusahaan" class="form-control" placeholder="Pengetahuan" required>{{ old('pengetahuan_perusahaan') }}</textarea>
                     </div>
+
                     <div class="col-md-6">
                         <label class="form-label">Ekspektasi Gaji</label>
                         <input type="number" name="ekspektasi_gaji" class="form-control"
@@ -101,15 +101,14 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label">Kelebihan</label>
-                        <input type="text" name="kelebihan" class="form-control"
-                            placeholder="Kelebihan" value="{{ old('kelebihan') }}" required>
+                        <textarea name="kelebihan" class="form-control" placeholder="Kelebihan" required>{{ old('kelebihan') }}</textarea>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Kekurangan</label>
-                        <input type="text" name="kekurangan" class="form-control"
-                            placeholder="Kekurangan" value="{{ old('kekurangan') }}" required>
+                        <textarea name="kekurangan" class="form-control" placeholder="Kekurangan" required>{{ old('kekurangan') }}</textarea>
                     </div>
                 </div>
+
 
                 <div class="mb-3">
                     <label class="form-label">Sosial Media Aktif</label>
@@ -169,12 +168,6 @@
                     <label class="form-label">Mengapa Perusahaan harus memberikan gaji sesuai yang Anda harapkan?</label>
                     <textarea name="alasan_ekspektasi" class="form-control" rows="2" required>{{ old('alasan_ekspektasi') }}</textarea>
                 </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Upload Berkas (tolong langsung kirim secara bersamaan)</label>
-                    <input type="file" name="upload_berkas[]" class="form-control" multiple required>
-                </div>
-
                 {{-- PERTANYAAN DINAMIS DARI HR (berdasarkan posisi yang dipilih) --}}
                 @php
                 // Dapatkan ID job yang aktif dari input lama atau parameter URL
@@ -182,30 +175,29 @@
 
                 // Daftar bidang dasar yang sudah ada untuk mencegah duplikasi
                 $baseFields = [
-                    'nama_lengkap','tempat_lahir','tanggal_lahir','umur','alamat','no_hp','email',
-                    'pendidikan_terakhir','nama_sekolah','jurusan','pengetahuan_perusahaan','bersedia_cilacap',
-                    'keahlian','tujuan_daftar','kelebihan','kekurangan','sosmed_aktif','alasan_merekrut',
-                    'kelebihan_dari_yang_lain','alasan_bekerja_dibawah_tekanan','kapan_bisa_gabung',
-                    'ekspektasi_gaji','alasan_ekspektasi','upload_berkas','posisi_pekerjaan'
+                'nama_lengkap','tempat_lahir','tanggal_lahir','umur','alamat','no_hp','email',
+                'pendidikan_terakhir','nama_sekolah','jurusan','pengetahuan_perusahaan','bersedia_cilacap',
+                'keahlian','tujuan_daftar','kelebihan','kekurangan','sosmed_aktif','alasan_merekrut',
+                'kelebihan_dari_yang_lain','alasan_bekerja_dibawah_tekanan','kapan_bisa_gabung',
+                'ekspektasi_gaji','alasan_ekspektasi','upload_berkas','posisi_pekerjaan'
                 ];
 
                 $dynamicFields = collect();
                 if ($activeJobId) {
-                    // Ambil bidang dinamis untuk job yang dipilih yang ditandai 'tampil' dan bukan bidang dasar
-                    $dynamicFields = \App\Models\FormField::where('id_job', $activeJobId)
-                        ->where('tampil', 1)
-                        ->orderBy('urutan')
-                        ->get()
-                        ->reject(function($f) use ($baseFields) {
-                            return in_array($f->nama_field, $baseFields);
-                        });
+                // Ambil bidang dinamis untuk job yang dipilih yang ditandai 'tampil' dan bukan bidang dasar
+                $dynamicFields = \App\Models\FormField::where('id_job', $activeJobId)
+                ->where('tampil', 1)
+                ->orderBy('urutan')
+                ->get()
+                ->reject(function($f) use ($baseFields) {
+                return in_array($f->nama_field, $baseFields);
+                });
                 }
                 @endphp
 
                 @if($activeJobId && $dynamicFields->count())
                 <h5 class="text-primary mt-4 mb-3">Pertanyaan Khusus</h5>
                 <hr>
-
                 @foreach($dynamicFields as $f)
                 <div class="mb-3">
                     <label class="form-label">{{ $f->label }}</label>
@@ -238,9 +230,9 @@
                         // Decode opsi JSON untuk dropdown
                         $opsi = [];
                         if (is_array($f->opsi)) {
-                            $opsi = $f->opsi;
+                        $opsi = $f->opsi;
                         } elseif (is_string($f->opsi)) {
-                            $opsi = json_decode($f->opsi, true) ?? [];
+                        $opsi = json_decode($f->opsi, true) ?? [];
                         }
                         @endphp
                         @foreach($opsi as $opt)
@@ -259,13 +251,19 @@
                 </div>
                 @endforeach
                 @elseif($activeJobId)
-                    {{-- Tidak ada bidang tambahan untuk job ini --}}
-                    <p class="text-muted text-center">Tidak ada pertanyaan tambahan untuk posisi ini.</p>
+                {{-- Tidak ada bidang tambahan untuk job ini --}}
+                <p class="text-muted text-center">Tidak ada pertanyaan tambahan untuk posisi ini.</p>
                 @else
-                    {{-- Belum ada job yang dipilih, bidang dinamis tidak ditampilkan --}}
-                    <p class="text-muted text-center">Pilih posisi pekerjaan terlebih dahulu untuk menampilkan pertanyaan tambahan.</p>
+                {{-- Belum ada job yang dipilih, bidang dinamis tidak ditampilkan --}}
+                <p class="text-muted text-center">Pilih posisi pekerjaan terlebih dahulu untuk menampilkan pertanyaan tambahan.</p>
                 @endif
                 {{-- AKHIR PERTANYAAN DINAMIS --}}
+
+                <div class="mb-3">
+                    <label class="form-label">Upload Berkas (Dokumen doc,pdf,exel,jpeg/jpg)</label>
+                    <input type="file" id="upload_berkas_input" name="upload_berkas[]" class="form-control" multiple required>
+                    <div id="file_list_display" class="mt-2 small text-muted"></div>
+                </div>
 
                 {{-- PENGALAMAN KERJA --}}
                 <h5 class="text-primary mt-4 mb-3">Pengalaman Kerja</h5>
@@ -344,7 +342,7 @@
     function tambahPengalaman() {
         let container = document.getElementById('pengalaman-container');
         // Gunakan timestamp untuk indeks unik untuk mencegah konflik
-        let idx = Date.now(); 
+        let idx = Date.now();
         let div = document.createElement('div');
         div.classList.add("card", "p-3", "mb-3", "shadow-sm", "pengalaman-item");
         div.innerHTML = `
@@ -384,5 +382,71 @@
         let card = btn.closest('.pengalaman-item');
         card.remove();
     }
+
+    // --- SKRIP UNTUK MENAMPILKAN DAN MENGHAPUS NAMA FILE ---
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('upload_berkas_input');
+        const fileListDisplay = document.getElementById('file_list_display');
+        let dataTransfer = new DataTransfer();
+
+        fileInput.addEventListener('change', function() {
+            // Tambahkan file-file baru ke DataTransfer object
+            for (let i = 0; i < this.files.length; i++) {
+                dataTransfer.items.add(this.files[i]);
+            }
+
+            // Perbarui input file dengan file dari DataTransfer object
+            this.files = dataTransfer.files;
+
+            // Render ulang daftar file
+            renderFileList();
+        });
+
+        // Fungsi untuk merender ulang daftar file yang dipilih
+        function renderFileList() {
+            fileListDisplay.innerHTML = '';
+
+            if (dataTransfer.files.length > 0) {
+                const ul = document.createElement('ul');
+                ul.classList.add('list-unstyled', 'mb-0');
+
+                for (let i = 0; i < dataTransfer.files.length; i++) {
+                    const file = dataTransfer.files[i];
+                    const li = document.createElement('li');
+
+                    // Buat tombol silang untuk menghapus file
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = '✖';
+                    deleteBtn.classList.add('btn', 'btn-danger', 'btn-sm', 'ms-2', 'p-0', 'px-1');
+                    deleteBtn.style.lineHeight = '1';
+                    deleteBtn.setAttribute('type', 'button');
+                    deleteBtn.setAttribute('data-index', i);
+                    deleteBtn.addEventListener('click', function() {
+                        deleteFile(this.getAttribute('data-index'));
+                    });
+
+                    // Tambahkan nama file dan tombol hapus
+                    const fileNameSpan = document.createElement('span');
+                    fileNameSpan.textContent = file.name;
+
+                    li.appendChild(fileNameSpan);
+                    li.appendChild(deleteBtn);
+                    li.classList.add('d-flex', 'align-items-center', 'mb-1');
+
+                    ul.appendChild(li);
+                }
+                fileListDisplay.appendChild(ul);
+            }
+        }
+
+        // Fungsi untuk menghapus file dari DataTransfer object
+        function deleteFile(index) {
+            dataTransfer.items.remove(index);
+            // Perbarui input file dengan file yang tersisa
+            fileInput.files = dataTransfer.files;
+            // Render ulang daftar file
+            renderFileList();
+        }
+    });
 </script>
 @endsection

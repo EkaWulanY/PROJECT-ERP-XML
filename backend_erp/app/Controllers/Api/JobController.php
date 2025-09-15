@@ -13,44 +13,82 @@ class JobController extends ResourceController
     // GET /api/jobs → semua job
     public function index()
     {
-        return $this->respond($this->model->findAll());
+        $jobs = $this->model->findAll();
+
+        // mapping show_gaji ke "ya"/"tidak"
+        foreach ($jobs as &$job) {
+            $job['show_gaji'] = $job['show_gaji'] == 1 ? 'ya' : 'tidak';
+            if ($job['show_gaji'] === 'tidak') {
+                $job['range_gaji'] = null;
+            }
+        }
+
+        return $this->respond($jobs);
     }
 
     // GET /api/jobs/active → hanya job aktif
     public function aktif()
     {
-        return $this->respond($this->model->where('status', 'aktif')->findAll());
+        $jobs = $this->model->where('status', 'aktif')->findAll();
+        foreach ($jobs as &$job) {
+            $job['show_gaji'] = $job['show_gaji'] == 1 ? 'ya' : 'tidak';
+            if ($job['show_gaji'] === 'tidak') {
+                $job['range_gaji'] = null;
+            }
+        }
+        return $this->respond($jobs);
     }
 
     // GET /api/jobs/inactive → hanya job nonaktif
     public function nonaktif()
     {
-        return $this->respond($this->model->where('status', 'nonaktif')->findAll());
+        $jobs = $this->model->where('status', 'nonaktif')->findAll();
+        foreach ($jobs as &$job) {
+            $job['show_gaji'] = $job['show_gaji'] == 1 ? 'ya' : 'tidak';
+            if ($job['show_gaji'] === 'tidak') {
+                $job['range_gaji'] = null;
+            }
+        }
+        return $this->respond($jobs);
     }
 
     // GET /api/jobs/{id}
     public function show($id = null)
     {
         $job = $this->model->find($id);
-        return $job ? $this->respond($job) : $this->failNotFound();
+
+        if (!$job) {
+            return $this->failNotFound();
+        }
+
+        if ($job['show_gaji'] == 0) {
+            $job['range_gaji'] = null;
+        }
+
+        $job['show_gaji'] = $job['show_gaji'] == 1 ? 'ya' : 'tidak';
+
+        return $this->respond($job);
     }
 
     // POST /api/jobs
     public function create()
     {
-        $data = [];
-
-        // 🔹 Ambil data (support JSON & form-data)
-        if (str_contains($this->request->getHeaderLine('Content-Type'), 'application/json')) {
+        if ($this->request->getPost()) {
+            $data = $this->request->getPost();
+        } elseif (str_contains($this->request->getHeaderLine('Content-Type'), 'application/json')) {
             $data = $this->request->getJSON(true);
         } else {
-            $data = $this->request->getPost();
+            $data = $this->request->getRawInput();
         }
 
-        // default status kalau tidak dikirim
+        // mapping show_gaji dari ya/tidak → 1/0
+        if (isset($data['show_gaji'])) {
+            $val = strtolower($data['show_gaji']);
+            $data['show_gaji'] = $val === 'ya' ? 1 : 0;
+        }
+
         $data['status'] = $data['status'] ?? 'nonaktif';
 
-        // 🔹 Handle upload file poster (opsional)
         $file = $this->request->getFile('poster');
         if ($file && $file->isValid() && !$file->hasMoved()) {
             $newName = $file->getRandomName();
@@ -58,7 +96,6 @@ class JobController extends ResourceController
             $data['image_url'] = base_url('uploads/posters/' . $newName);
         }
 
-        // 🔹 Simpan data job
         if ($this->model->insert($data)) {
             return $this->respondCreated([
                 'status'  => 'success',
@@ -73,15 +110,20 @@ class JobController extends ResourceController
     // PUT /api/jobs/{id}
     public function update($id = null)
     {
-        $data = [];
-
-        if (str_contains($this->request->getHeaderLine('Content-Type'), 'application/json')) {
+        if ($this->request->getPost()) {
+            $data = $this->request->getPost();
+        } elseif (str_contains($this->request->getHeaderLine('Content-Type'), 'application/json')) {
             $data = $this->request->getJSON(true);
         } else {
             $data = $this->request->getRawInput();
         }
 
-        // 🔹 Handle upload file poster saat update (opsional)
+        // mapping show_gaji dari ya/tidak → 1/0
+        if (isset($data['show_gaji'])) {
+            $val = strtolower($data['show_gaji']);
+            $data['show_gaji'] = $val === 'ya' ? 1 : 0;
+        }
+
         $file = $this->request->getFile('poster');
         if ($file && $file->isValid() && !$file->hasMoved()) {
             $newName = $file->getRandomName();
@@ -135,7 +177,7 @@ class JobController extends ResourceController
         $posisi     = $this->request->getGet('posisi');
         $pendidikan = $this->request->getGet('pendidikan');
 
-        $builder = $this->model->where('status', 'aktif'); // hanya job aktif
+        $builder = $this->model->where('status', 'aktif');
 
         if ($keyword) {
             $builder->groupStart()
@@ -159,6 +201,13 @@ class JobController extends ResourceController
 
         $jobs = $builder->orderBy('tanggal_post', 'DESC')->findAll();
 
+        foreach ($jobs as &$job) {
+            $job['show_gaji'] = $job['show_gaji'] == 1 ? 'ya' : 'tidak';
+            if ($job['show_gaji'] === 'tidak') {
+                $job['range_gaji'] = null;
+            }
+        }
+
         return $this->respond($jobs);
     }
 
@@ -179,9 +228,11 @@ class JobController extends ResourceController
             'deskripsi'     => $job['deskripsi'],
             'kualifikasi'   => explode("\n", $job['kualifikasi']),
             'jobdesk'       => explode("\n", $job['jobdesk']),
+            'range_gaji'    => $job['show_gaji'] == 1 ? $job['range_gaji'] : null,
             'image_url'     => $job['image_url'],
             'tanggal_post'  => $job['tanggal_post'],
             'batas_lamaran' => $job['batas_lamaran'],
+            'show_gaji'     => $job['show_gaji'] == 1 ? 'ya' : 'tidak'
         ]);
     }
 }
