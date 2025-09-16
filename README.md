@@ -540,3 +540,21 @@ jika error gunakan php artisan migrate dan php artisan key:generate
 ### 8. Akses melalui:
 
 http://localhost:8000
+
+
+Revisi sistem
+1. penambahan login pada awal saat ingin memasuki halaman dashboard sesuai pov masing masing
+    a. dashboard = untuk hrd / admin
+    b. dashboard_karyawan = untuk halaman cuti karyawan
+    c. dashboard_direktur = untuk halaman direkrur acc cuti / izin hrd dan mengisi cuti / izin
+    d. dashboard_owner = untuk acc izin atau cuti direktur
+2. Tampilan HRD
+![alt text](<Gambar WhatsApp 2025-09-16 pukul 11.19.29_ab83c0ba.jpg>)
+    a. HRD Login dengan nama dan password yang dibuat
+    b. memasuki halaman dashboard
+    Pada bagian kiri terdapat sidebar untuk beripindah ke bagian bagian lain pada hrd
+    a. Lamaran Kerja berisi dropdown untuk data pelamar kerja, job yanng ada diperusahaan
+        generate qr, dan edit form lamaran untuk menambah pertanyaan dari hrd ke pelamar kerja
+    b. Dropdown Karyawan berisi pengajuan izin, pengahuan cuti, dan riwayat izin dan cuti dari karyawan 
+    c. Dropdown Cuti HRD berisi form Cuti untuk HRD dan Tabel Riwayat Cuti / Izin yang dapat dilihat HRD
+    d. Absensi berisi data absensi seluruh karyawan yang dapat di cetak dalam bentuk exel.
