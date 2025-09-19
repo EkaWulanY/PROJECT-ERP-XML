@@ -88,22 +88,4 @@ class DataKaryawanController extends Controller
 
         return back()->with('error', 'Gagal menghapus karyawan');
     }
-
-    // === Export ke Excel ===
-    public function export()
-    {
-        try {
-            $response = Http::get("{$this->apiUrl}/exportExcel");
-
-            if ($response->successful()) {
-                return response($response->body(), 200)
-                    ->header('Content-Type', $response->header('Content-Type'))
-                    ->header('Content-Disposition', $response->header('Content-Disposition'));
-            }
-        } catch (\Throwable $th) {
-            Log::error("Gagal export data karyawan: " . $th->getMessage());
-        }
-
-        return back()->with('error', 'Gagal export data');
-    }
 }

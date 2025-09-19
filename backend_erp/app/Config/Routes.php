@@ -127,5 +127,3 @@ $routes->group('api', function($routes) {
     $routes->delete('karyawan/(:segment)', 'Cuti\KaryawanController::delete/$1');
     $routes->get('karyawan/export/excel', 'Cuti\KaryawanController::exportExcel');
 });
-
-$routes->get('/bot/polling', 'Bot::polling');

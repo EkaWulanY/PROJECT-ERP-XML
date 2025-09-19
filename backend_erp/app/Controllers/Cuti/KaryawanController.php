@@ -6,6 +6,7 @@ use CodeIgniter\RESTful\ResourceController;
 use App\Models\KaryawanModel;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use CodeIgniter\HTTP\Response;
 
 class KaryawanController extends ResourceController
 {
@@ -43,12 +44,12 @@ class KaryawanController extends ResourceController
         $newID = $this->model->generateID();
 
         $data = [
-            'id_karyawan'       => $newID,
-            'nama'              => $nama,
-            'jabatan'           => $jabatan,
-            'tipe'              => $tipe,
-            'password'          => password_hash($password, PASSWORD_BCRYPT), // hashed
-            'password_text'     => $password, // plain text untuk kolom password_text
+            'id_karyawan'      => $newID,
+            'nama'             => $nama,
+            'jabatan'          => $jabatan,
+            'tipe'             => $tipe,
+            'password'         => password_hash($password, PASSWORD_BCRYPT), // hashed
+            'password_text'    => $password, // plain text untuk kolom password_text
             'username_telegram' => $username
         ];
 
@@ -78,19 +79,25 @@ class KaryawanController extends ResourceController
     // === Update data karyawan ===
     public function update($id = null)
     {
-        $data = $this->request->getRawInput();
+        // Ambil body JSON jadi array
+        $data = $this->request->getJSON(true);
+        if (!$data) {
+            // fallback kalau bukan JSON
+            $data = $this->request->getRawInput();
+        }
 
         if (!$this->model->find($id)) {
             return $this->failNotFound("Karyawan tidak ditemukan");
         }
 
-        // Jika password diisi, update hash dan text
+        // Jika password diisi, update hash + plain text
         if (isset($data['password']) && !empty($data['password'])) {
-            $data['password']      = password_hash($data['password'], PASSWORD_BCRYPT);
-            $data['password_text'] = $data['password']; // plain text
+            $plainPassword       = $data['password']; // simpan dulu
+            $data['password']      = password_hash($plainPassword, PASSWORD_BCRYPT);
+            $data['password_text'] = $plainPassword;
         } else {
-            unset($data['password']);      // jangan update kalau kosong
-            unset($data['password_text']); // jangan update password_text juga
+            unset($data['password']);
+            unset($data['password_text']);
         }
 
         $this->model->update($id, $data);
@@ -100,6 +107,7 @@ class KaryawanController extends ResourceController
             'message' => 'Data karyawan berhasil diperbarui'
         ]);
     }
+
 
     // === Hapus karyawan ===
     public function delete($id = null)
@@ -119,8 +127,10 @@ class KaryawanController extends ResourceController
     // === Export data karyawan ke Excel ===
     public function exportExcel()
     {
+        // Ambil data dari database
         $karyawan = $this->model->findAll();
 
+        // Buat objek Spreadsheet baru
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
@@ -130,9 +140,9 @@ class KaryawanController extends ResourceController
         $sheet->setCellValue('C1', 'Jabatan');
         $sheet->setCellValue('D1', 'Tipe Karyawan');
         $sheet->setCellValue('E1', 'Username Telegram');
-        $sheet->setCellValue('F1', 'Password Text'); // tambah kolom password_text
+        $sheet->setCellValue('F1', 'Password Text');
 
-        // Isi data
+        // Isi data dari database
         $row = 2;
         foreach ($karyawan as $k) {
             $sheet->setCellValue('A' . $row, $k['id_karyawan']);
@@ -140,18 +150,25 @@ class KaryawanController extends ResourceController
             $sheet->setCellValue('C' . $row, $k['jabatan']);
             $sheet->setCellValue('D' . $row, $k['tipe']);
             $sheet->setCellValue('E' . $row, $k['username_telegram']);
-            $sheet->setCellValue('F' . $row, $k['password_text']); // tampilkan password_text
+            $sheet->setCellValue('F' . $row, $k['password_text']);
             $row++;
         }
 
-        $writer = new Xlsx($spreadsheet);
-        $filename = 'Data_Karyawan.xlsx';
+        // Tentukan nama file
+        $filename = 'Data_Karyawan_' . date('Ymd_His') . '.xlsx';
 
-        // response file
-        return $this->response
-            ->setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            ->setHeader('Content-Disposition', "attachment;filename=\"$filename\"")
-            ->setHeader('Cache-Control', 'max-age=0')
-            ->setBody($writer->save('php://output'));
+        // Set header untuk respons download
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        
+        // Buat objek penulis (writer)
+        $writer = new Xlsx($spreadsheet);
+        
+        // Langsung kirimkan file ke output (Postman/browser)
+        $writer->save('php://output');
+        
+        // Hentikan eksekusi skrip setelah pengiriman file
+        exit();
     }
 }
