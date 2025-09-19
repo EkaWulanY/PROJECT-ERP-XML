@@ -15,7 +15,7 @@
         }
 
         .hover-effect-btn:hover {
-            background: #4E71FF;
+            background: #FF6000;
             transition: background .3s ease;
         }
 
@@ -29,7 +29,7 @@
         /* Styling untuk sidebar dan dropdown */
         .sidebar {
             width: 250px;
-            background-color: #072A75;
+            background-color: #FF6000;
             color: white;
             padding: 1rem;
             height: 100vh;
@@ -48,7 +48,7 @@
 
         .sidebar a:hover,
         .sidebar .dropdown-btn:hover {
-            background-color: #4E71FF;
+            background-color: #ff8640;
         }
 
         .dropdown-menu {
@@ -60,8 +60,18 @@
         .dropdown-menu a {
             padding-left: 3rem;
         }
+
+        .active-menu {
+            background-color: rgba(255, 243, 176, 0.7);
+            color: #000;
+            font-weight: bold;
+        }
+
+        .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/heroicons@2.0.12/dist/heroicons.min.js"></script>
 </head>
 
 <body class="bg-gray-200 flex">
@@ -73,13 +83,14 @@
             <span class="text-xl font-bold">Sistem ERP HR</span>
         </div>
 
-        <a href="{{ route('admin.dashboard') }}">
+        <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active-menu' : '' }}">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
             </svg>
             Dashboard
         </a>
 
+        {{-- Lamaran --}}
         <div class="w-full">
             <button id="dropdown-btn" class="dropdown-btn w-full text-left focus:outline-none flex items-center justify-between">
                 <div class="flex items-center">
@@ -93,39 +104,91 @@
                 </svg>
             </button>
             <div id="dropdown-menu" class="dropdown-menu">
-                <a href="{{ route('admin.jobs.list') }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-8h4v2h-4v-2z" />
-                    </svg>
+                <a href="{{ route('admin.jobs.list') }}" class="{{ request()->routeIs('admin.jobs.list') ? 'active-menu' : '' }}">
                     List Job
                 </a>
-                <a href="{{ route('admin.pelamar.list') }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M16 11c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3zm-2.43 3.63C3.65 14.93 2 16.59 2 18.5V22h20v-3.5c0-1.91-1.65-3.57-3.57-4.37-1.36-.61-2.92-1.03-4.57-1.03-1.66 0-3.22.42-4.58 1.03zM18 20H6v-1.5c0-.9.72-1.62 1.62-1.62.91 0 1.63.72 1.63 1.62V20h5.5v-1.5c0-.9.72-1.62 1.62-1.62.91 0 1.63.72 1.63 1.62V20z" />
-                    </svg>
+                <a href="{{ route('admin.pelamar.list') }}" class="{{ request()->routeIs('admin.pelamar.list') ? 'active-menu' : '' }}">
                     Data Pelamar
                 </a>
-                <a href="{{ route('admin.form.lamaran') }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 13H5c-.55 0-1 .45-1 1s.45 1 1 1h14c.55 0 1-.45 1-1s-.45-1-1-1zm0-6H5c-.55 0-1 .45-1 1s.45 1 1 1h14c.55 0 1-.45 1-1s-.45-1-1-1z" />
-                    </svg>
+                <a href="{{ route('admin.form.lamaran') }}" class="{{ request()->routeIs('admin.form.lamaran') ? 'active-menu' : '' }}">
                     Edit Form Daftar
                 </a>
-                <a href="{{ route('admin.qrcode') }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M3 11h8V3H3v8zm2-6h4v4H5V5zM3 21h8v-8H3v8zm2-6h4v4H5v-4zm8-12v8h8V3h-8zm6 6h-4V5h4v4zm0 6h-2v2h-2v-2h-2v2h-2v-2h-2v2h-2v-2h-2v2H9v-2H7v2H5v-2H3v2h8v-2h-2v-2h2v-2h-2v-2h2v-2h2v-2h2v-2h-2v2h-2v2h-2v2h-2v-2h-2v2h-2v-2h-2v-2h2v-2h2v-2h-2v-2h-2v-2h-2v2h-2V3z" />
-                    </svg>
+                <a href="{{ route('admin.qrcode') }}" class="{{ request()->routeIs('admin.qrcode') ? 'active-menu' : '' }}">
                     Generate QR
                 </a>
             </div>
         </div>
 
-        <a href="{{ asset('finger/finger.php') }}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 1c-4.97 0-9 4.03-9 9v7c0 1.1.9 2 2 2h4.5a1.5 1.5 0 0 1 0-3H5v-2h14v2h-1.5a1.5 1.5 0 0 1 0 3H21a2 2 0 0 0 2-2v-7c0-4.97-4.03-9-9-9zm0 2c3.87 0 7 3.13 7 7v7H5v-7c0-3.87 3.13-7 7-7zM7 15h10v2H7z" />
-            </svg>
+        {{-- 🔹 Dropdown Karyawan (aktif + route) --}}
+        <!-- 🔹 Dropdown Karyawan -->
+        <div class="w-full">
+            <button id="dropdown-karyawan-btn" class="dropdown-btn w-full text-left focus:outline-none flex items-center justify-between">
+                <div class="flex items-center">
+                    <!-- Ganti SVG sesuai ikon Karyawan -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 
+                         3 1.34 3 3 3zm-8 0c1.66 0 
+                         2.99-1.34 2.99-3S9.66 5 8 
+                         5 5 6.34 5 8s1.34 3 3 3zm0 
+                         2c-2.33 0-7 1.17-7 3.5V20h14v-3.5C15 
+                         14.17 10.33 13 8 13zm8 
+                         0c-.29 0-.62.02-.97.05 1.16.84 1.97 
+                         1.97 1.97 3.45V20h6v-3.5c0-2.33-4.67-3.5-7-3.5z" />
+                    </svg>
+                    Karyawan
+                </div>
+                <svg id="dropdown-karyawan-arrow" xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 ml-2 transition-transform duration-300 transform"
+                    viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M5.293 7.293a1 1 0 011.414 0L10 
+                   10.586l3.293-3.293a1 1 0 
+                   111.414 1.414l-4 4a1 1 0 
+                   01-1.414 0l-4-4a1 1 0 
+                   010-1.414z"
+                        clip-rule="evenodd" />
+                </svg>
+            </button>
+
+            <div id="dropdown-karyawan-menu" class="dropdown-menu">
+                <a href="{{ route('karyawan.list') }}" class="{{ request()->routeIs('karyawan.list') ? 'active-menu' : '' }}">
+                    Data Karyawan
+                </a>
+                <a href="#">Pengajuan Cuti</a>
+                <a href="#">Pengajuan Izin</a>
+                <a href="#">Riwayat Izin & Cuti</a>
+            </div>
+        </div>
+
+
+        {{-- 🔹 Dropdown Cuti HRD (masih non aktif) --}}
+        <div class="w-full">
+            <button class="dropdown-btn w-full text-left flex items-center justify-between disabled">
+                <div class="flex items-center">
+                    📝 Cuti HRD
+                </div>
+                <span>▼</span>
+            </button>
+            <div class="dropdown-menu disabled">
+                <a href="#">Pengajuan Izin / Cuti HRD</a>
+                <a href="#">Riwayat Izin / Cuti HRD</a>
+            </div>
+        </div>
+
+        <a href="{{ asset('finger/finger.php') }}" class="{{ request()->is('finger/*') ? 'active-menu' : '' }}">
             Absensi
         </a>
+
+        <div class="mt-auto mb-4">
+            <a href="{{ route('logout') }}" class="flex items-center px-4 py-2 rounded-lg hover-highlight">
+                <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 
+                          01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>Logout</span>
+            </a>
+        </div>
     </div>
 
     {{-- MAIN CONTENT WRAPPER UNTUK MENGHINDARI TUMPANG TINDIH --}}
@@ -333,7 +396,7 @@
 
                         <div id="preview-hrd-fields" class="space-y-3">
                             <h3 class="font-bold text-[#072A75] mb-2">Pertanyaan Tambahan dari HRD</h3>
-                            </div>
+                        </div>
 
                         <hr class="my-3">
 
@@ -395,15 +458,26 @@
     </template>
 
     <script>
+        // Dropdown Lamaran
         const dropdownBtn = document.getElementById('dropdown-btn');
         const dropdownMenu = document.getElementById('dropdown-menu');
         const dropdownArrow = document.getElementById('dropdown-arrow');
-
         dropdownBtn.addEventListener('click', () => {
-            const isMenuOpen = dropdownMenu.style.display === 'block';
-            dropdownMenu.style.display = isMenuOpen ? 'none' : 'block';
-            dropdownArrow.style.transform = isMenuOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+            const isOpen = dropdownMenu.style.display === 'block';
+            dropdownMenu.style.display = isOpen ? 'none' : 'block';
+            dropdownArrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
         });
+        // Dropdown Karyawan
+        const dropdownKaryawanBtn = document.getElementById('dropdown-karyawan-btn');
+        const dropdownKaryawanMenu = document.getElementById('dropdown-karyawan-menu');
+        const dropdownKaryawanArrow = document.getElementById('dropdown-karyawan-arrow');
+
+        dropdownKaryawanBtn.addEventListener('click', () => {
+            const isOpen = dropdownKaryawanMenu.style.display === 'block';
+            dropdownKaryawanMenu.style.display = isOpen ? 'none' : 'block';
+            dropdownKaryawanArrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+        });
+
 
         document.addEventListener('click', (event) => {
             if (!dropdownBtn.contains(event.target) && !dropdownMenu.contains(event.target)) {
@@ -464,7 +538,7 @@
             } else {
                 fldOpsi.parentElement.style.display = 'none';
             }
-            
+
             return el;
         }
 

@@ -63,7 +63,8 @@ function getUsers($IP, $Key = "0")
         /* START: Styling untuk sidebar */
         .sidebar {
             width: 250px;
-            background-color: #072A75;
+            background-color: #FF6000;
+            /* Warna diubah menjadi oranye */
             color: white;
             padding: 1rem;
             height: 100vh;
@@ -90,7 +91,14 @@ function getUsers($IP, $Key = "0")
 
         .sidebar a:hover,
         .sidebar .dropdown-btn:hover {
-            background-color: #4E71FF;
+            background-color: #E65700;
+            /* Warna hover oranye yang lebih gelap */
+        }
+
+        .sidebar .active-link {
+            background-color: rgba(255, 255, 102, 0.5);
+            /* Warna aktif kuning transparan */
+            font-weight: 600;
         }
 
         .dropdown-menu {
@@ -102,6 +110,8 @@ function getUsers($IP, $Key = "0")
 
         .dropdown-menu a {
             padding-left: 3rem;
+            opacity: 0.8;
+            /* Menambahkan efek non-aktif */
         }
 
         /* END: Styling untuk sidebar */
@@ -151,7 +161,8 @@ function getUsers($IP, $Key = "0")
         }
 
         table thead {
-            background: #4f46e5;
+            background: #FF6000;
+            /* Diubah menjadi oranye */
             color: white;
             font-weight: 600;
         }
@@ -198,7 +209,8 @@ function getUsers($IP, $Key = "0")
 
         /* Topbar yang baru dan terintegrasi */
         .top-bar {
-            background-color: #072A75;
+            background-color: #FF6000;
+            /* Warna diubah menjadi oranye */
             color: white;
             padding: 1rem;
             display: flex;
@@ -224,26 +236,26 @@ function getUsers($IP, $Key = "0")
             <img src="/admin/img/logo.jpg" alt="Logo" class="h-10 w-10 mr-2 rounded-full">
             <span class="text-xl font-bold">Sistem ERP HR</span>
         </div>
-        <a href="/">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-            </svg>
-            Dashboard
+        <!-- Dashboard -->
+        <a href="/admin/dashboard"
+            class="flex items-center px-4 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition {{ request()->is('admin/dashboard') ? 'bg-orange-300 font-bold text-black' : 'text-white' }}">
+            <i class="fa-solid fa-house-chimney mr-3"></i>
+            <span>Dashboard</span>
         </a>
-
+        <!-- Dropdown Lamaran Pekerjaan -->
         <div class="w-full">
-            <button id="dropdown-btn" class="dropdown-btn w-full text-left focus:outline-none flex items-center justify-between">
+            <button id="dropdown-btn-lamaran" class="dropdown-btn w-full text-left focus:outline-none flex items-center justify-between">
                 <div class="flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm-2 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zM8 12c0 2.21 1.79 4 4 4s4-1.79 4-4-1.79-4-4-4-4 1.79-4 4z" />
                     </svg>
                     Lamaran Pekerjaan
                 </div>
-                <svg id="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 transition-transform duration-300 transform" viewBox="0 0 20 20" fill="currentColor">
+                <svg id="dropdown-arrow-lamaran" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 transition-transform duration-300 transform" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                 </svg>
             </button>
-            <div id="dropdown-menu" class="dropdown-menu">
+            <div id="dropdown-menu-lamaran" class="dropdown-menu">
                 <a href="/jobs">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-8h4v2h-4v-2z" />
@@ -258,26 +270,92 @@ function getUsers($IP, $Key = "0")
                 </a>
                 <a href="/form/lamaran">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19 13H5c-.55 0-1 .45-1 1s.45 1 1 1h14c.55 0 1-.45 1-1s-.45-1-1-1zm0-6H5c-.55 0-1 .45-1 1s.45 1 1 1h14c.55 0 1-.45 1-1s-.45-1-1-1z" />
+                        <path d="M19 13H5c-.55 0-1 .45-1 1s.45 1 1 1h14c.55 0 1-.45 1-1s-.45-1-1-1zM19 6H5c-.55 0-1 .45-1 1s.45 1 1 1h14c.55 0 1-.45 1-1s-.45-1-1-1z" />
                     </svg>
                     Edit Form Daftar
                 </a>
                 <a href="/admin/qrcode">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M3 11h8V3H3v8zm2-6h4v4H5V5zM3 21h8v-8H3v8zm2-6h4v4H5v-4zm8-12v8h8V3h-8zm6 6h-4V5h4v4zm0 6h-2v2h-2v-2h-2v2h-2v-2h-2v2H9v-2H7v2H5v-2H3v2h8v-2h-2v-2h2v-2h-2v-2h2v-2h2v-2h-2v2h-2v2h-2v2h-2v-2h-2v2h-2v-2h-2v-2h-2v-2h2v-2h2v-2h-2v-2h-2v2h-2V3z" />
+                        <path d="M3 11h8V3H3v8zm2-6h4v4H5V5zM3 21h8v-8H3v8zm2-6h4v4H5v-4zm8-12v8h8V3h-8zm6 6h-4V5h4v4zm0 6h-2v2h-2v-2h-2v2h-2v-2h-2v2H9v-2H7v2H5v-2H3v2h8v-2h-2v-2h2v-2h-2v-2h2v-2h-2v2h-2v2h-2v2h-2v-2h-2v2h-2v-2h-2v-2h-2v-2h-2v2h-2V3z" />
                     </svg>
                     Generate QR
                 </a>
             </div>
         </div>
 
-        <a href="/finger/finger.php">
+        <!-- Dropdown Karyawan -->
+        <div class="w-full">
+            <button id="dropdown-btn-karyawan" class="dropdown-btn w-full text-left focus:outline-none flex items-center justify-between">
+                <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                    Karyawan
+                </div>
+                <svg id="dropdown-arrow-karyawan" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 transition-transform duration-300 transform" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+            <div id="dropdown-menu-karyawan" class="dropdown-menu">
+                <a href="/karyawan">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 
+            1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 
+            1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                    Data Karyawan
+                </a>
+                <a href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 7h8v2H8V7zm0 4h8v2H8v-2zm0 4h5v2H8v-2z" />
+                    </svg>
+                    Pengajuan Cuti
+                </a>
+                <a href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M5 12h14v2H5z" />
+                    </svg>
+                    Pengajuan Izin
+                </a>
+                <a href="#">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h10v2H4v-2z" />
+                    </svg>
+                    Riwayat Izin & Cuti
+                </a>
+            </div>
+
+        </div>
+
+        <!-- Dropdown Cuti HRD -->
+        <div class="w-full">
+            <button id="dropdown-btn-cuti-hrd" class="dropdown-btn w-full text-left focus:outline-none flex items-center justify-between">
+                <div class="flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 1c-4.97 0-9 4.03-9 9v7c0 1.1.9 2 2 2h4.5a1.5 1.5 0 0 1 0-3H5v-2h14v2h-1.5a1.5 1.5 0 0 1 0 3H21a2 2 0 0 0 2-2v-7c0-4.97-4.03-9-9-9zm0 2c3.87 0 7 3.13 7 7v7H5v-7c0-3.87 3.13-7 7-7zM7 15h10v2H7z" />
+                    </svg>
+                    Cuti HRD
+                </div>
+                <svg id="dropdown-arrow-cuti-hrd" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 transition-transform duration-300 transform" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+            <div id="dropdown-menu-cuti-hrd" class="dropdown-menu">
+                <!-- Tautan dalam posisi non-aktif -->
+                <a href="#">Pengajuan izin /cuti HRD</a>
+                <a href="#">Riwayat izin / cuti hrd</a>
+            </div>
+        </div>
+
+        <!-- Tautan Absensi -->
+        <a href="/finger/finger.php" class="active-link">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 1c-4.97 0-9 4.03-9 9v7c0 1.1.9 2 2 2h4.5a1.5 1.5 0 0 1 0-3H5v-2h14v2h-1.5a1.5 1.5 0 0 1 0 3H21a2 2 0 0 0 2-2v-7c0-4.97-4.03-9-9-9zm0 2c3.87 0 7 3.13 7 7v7H5v-7c0-3.87 3.13-7 7-7zM7 15h10v2H7z" />
             </svg>
             Absensi
         </a>
     </div>
+
     <div class="main-content">
         <div class="top-bar">
             <div class="flex items-center">
@@ -287,7 +365,6 @@ function getUsers($IP, $Key = "0")
                 </svg>
             </div>
         </div>
-
         <div class="content-area">
             <div class="card">
                 <center>
@@ -353,21 +430,43 @@ function getUsers($IP, $Key = "0")
         </div>
     </div>
     <script>
-        const dropdownBtn = document.getElementById('dropdown-btn');
-        const dropdownMenu = document.getElementById('dropdown-menu');
-        const dropdownArrow = document.getElementById('dropdown-arrow');
+        const dropdowns = [{
+            button: 'dropdown-btn-lamaran',
+            menu: 'dropdown-menu-lamaran',
+            arrow: 'dropdown-arrow-lamaran'
+        }, {
+            button: 'dropdown-btn-karyawan',
+            menu: 'dropdown-menu-karyawan',
+            arrow: 'dropdown-arrow-karyawan'
+        }, {
+            button: 'dropdown-btn-cuti-hrd',
+            menu: 'dropdown-menu-cuti-hrd',
+            arrow: 'dropdown-arrow-cuti-hrd'
+        }];
 
-        dropdownBtn.addEventListener('click', () => {
-            const isMenuOpen = dropdownMenu.style.display === 'block';
-            dropdownMenu.style.display = isMenuOpen ? 'none' : 'block';
-            dropdownArrow.style.transform = isMenuOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+        dropdowns.forEach(item => {
+            const dropdownBtn = document.getElementById(item.button);
+            const dropdownMenu = document.getElementById(item.menu);
+            const dropdownArrow = document.getElementById(item.arrow);
+
+            if (dropdownBtn && dropdownMenu && dropdownArrow) {
+                dropdownBtn.addEventListener('click', () => {
+                    const isMenuOpen = dropdownMenu.style.display === 'block';
+                    dropdownMenu.style.display = isMenuOpen ? 'none' : 'block';
+                    dropdownArrow.style.transform = isMenuOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+                });
+            }
         });
 
         document.addEventListener('click', (event) => {
-            if (!dropdownBtn.contains(event.target) && !dropdownMenu.contains(event.target)) {
-                dropdownMenu.style.display = 'none';
-                dropdownArrow.style.transform = 'rotate(0deg)';
-            }
+            dropdowns.forEach(item => {
+                const dropdownBtn = document.getElementById(item.button);
+                const dropdownMenu = document.getElementById(item.menu);
+                if (dropdownBtn && dropdownMenu && !dropdownBtn.contains(event.target) && !dropdownMenu.contains(event.target)) {
+                    dropdownMenu.style.display = 'none';
+                    document.getElementById(item.arrow).style.transform = 'rotate(0deg)';
+                }
+            });
         });
 
         $(document).ready(function() {
@@ -395,7 +494,8 @@ function getUsers($IP, $Key = "0")
 
             $("#exportExcel").click(function() {
                 if ($(this).prop('disabled')) {
-                    alert('Silakan tampilkan data terlebih dahulu sebelum export.');
+                    // Mengubah alert menjadi pesan di konsol atau UI kustom jika diperlukan
+                    console.log('Silakan tampilkan data terlebih dahulu sebelum export.');
                     return;
                 }
 

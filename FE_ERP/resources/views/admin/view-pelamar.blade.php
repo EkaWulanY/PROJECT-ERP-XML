@@ -15,7 +15,7 @@
         }
 
         .hover-effect-btn:hover {
-            background-color: #4E71FF;
+            background-color: #FF8533;
             transition: background-color 0.3s ease;
         }
 
@@ -36,6 +36,7 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
+        /* Dropdown */
         .dropdown-menu {
             display: none;
             position: absolute;
@@ -45,12 +46,24 @@
         .dropdown.active .dropdown-menu {
             display: block;
         }
+
+        /* Active menu highlight */
+        .active-link {
+            background-color: rgba(255, 255, 0, 0.2);
+        }
+
+        /* Disabled menu */
+        .disabled-link {
+            opacity: 0.5;
+            pointer-events: none;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 
 <body class="bg-gray-200 flex h-screen">
     <!-- Sidebar -->
-    <div class="bg-[#072A75] text-white w-64 p-4 flex flex-col shadow-lg">
+    <div class="bg-[#FF6600] text-white w-64 p-4 flex flex-col shadow-lg">
         <div class="flex items-center mb-8">
             <img src="{{ asset('admin/img/logo.jpg') }}" alt="Logo" class="h-8 w-8 mr-2 rounded-full">
             <span class="text-xl font-bold">Sistem ERP HR</span>
@@ -58,29 +71,63 @@
         <nav class="flex-1">
             <ul>
                 <li class="mb-4">
-                    <a href="#" class="flex items-center px-4 py-2 rounded-lg hover:bg-[#4E71FF]">
+                    <a href="#" class="flex items-center px-4 py-2 rounded-lg hover:bg-[#FF8533] {{ request()->routeIs('admin.dashboard') ? 'active-link' : '' }}">
                         <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0v-9.5a1 1 0 011-1h6a1 1 0 011 1v9.5a1 1 0 01-1 1h-6a1 1 0 01-1-1z" />
                         </svg>
                         <span>Dashboard</span>
                     </a>
                 </li>
+
+                <!-- Lamaran Kerja -->
                 <li class="mb-4 relative dropdown">
-                    <a href="#" class="flex items-center px-4 py-2 rounded-lg hover:bg-[#4E71FF]" id="lamaran-kerja-btn">
+                    <a href="#" class="flex items-center px-4 py-2 rounded-lg hover:bg-[#FF8533]" id="lamaran-kerja-btn">
                         <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                         </svg>
                         <span>Lamaran Kerja</span>
                     </a>
-                    <div class="dropdown-menu bg-[#072A75] rounded-lg shadow-lg mt-2">
-                        <a href="{{ route('admin.jobs.list') }}" class="block px-4 py-2 text-white hover:bg-[#4E71FF] rounded-t-lg">List Job</a>
-                        <a href="{{ route('admin.pelamar.list') }}" class="block px-4 py-2 text-white hover:bg-[#4E71FF]">Data Pelamar</a>
-                        <a href="{{ route('admin.qrcode') }}" class="block px-4 py-2 text-white hover:bg-[#4E71FF]">Generate QR</a>
-                        <a href="{{ route('admin.form.lamaran') }}" class="block px-4 py-2 text-white hover:bg-[#4E71FF] rounded-b-lg">Edit Form Daftar</a>
+                    <div class="dropdown-menu bg-[#FF6600] rounded-lg shadow-lg mt-2">
+                        <a href="{{ route('admin.jobs.list') }}" class="block px-4 py-2 text-white hover:bg-[#FF8533] {{ request()->routeIs('admin.jobs.list') ? 'active-link' : '' }}">List Job</a>
+                        <a href="{{ route('admin.pelamar.list') }}" class="block px-4 py-2 text-white hover:bg-[#FF8533] {{ request()->routeIs('admin.pelamar.list') ? 'active-link' : '' }}">Data Pelamar</a>
+                        <a href="{{ route('admin.qrcode') }}" class="block px-4 py-2 text-white hover:bg-[#FF8533] {{ request()->routeIs('admin.qrcode') ? 'active-link' : '' }}">Generate QR</a>
+                        <a href="{{ route('admin.form.lamaran') }}" class="block px-4 py-2 text-white hover:bg-[#FF8533] {{ request()->routeIs('admin.form.lamaran') ? 'active-link' : '' }}">Edit Form Daftar</a>
                     </div>
                 </li>
+
+                <!-- Karyawan -->
+                <li class="mb-4 relative dropdown">
+                    <a href="#" class="flex items-center px-4 py-2 rounded-lg hover:bg-[#FF8533]" id="karyawan-btn">
+                        <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A7.962 7.962 0 0112 15a7.962 7.962 0 016.879 2.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span>Karyawan</span>
+                    </a>
+                    <div class="dropdown-menu bg-[#FF6600] rounded-lg shadow-lg mt-2">
+                        <a href="{{ route('karyawan.list') }}" class="block px-4 py-2 text-white hover:bg-[#FF8533] {{ request()->routeIs('karyawan.list') ? 'active-link' : '' }}">Data Karyawan</a>
+                        <a href="#" class="block px-4 py-2 text-white disabled-link">Pengajuan Cuti</a>
+                        <a href="#" class="block px-4 py-2 text-white disabled-link">Pengajuan Izin</a>
+                        <a href="#" class="block px-4 py-2 text-white disabled-link">Riwayat Izin & Cuti</a>
+                    </div>
+                </li>
+
+                <!-- Cuti HRD -->
+                <li class="mb-4 relative dropdown">
+                    <a href="#" class="flex items-center px-4 py-2 rounded-lg hover:bg-[#FF8533]" id="cuti-btn">
+                        <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>Cuti HRD</span>
+                    </a>
+                    <div class="dropdown-menu bg-[#FF6600] rounded-lg shadow-lg mt-2">
+                        <a href="#" class="block px-4 py-2 text-white disabled-link">Pengajuan Izin / Cuti HRD</a>
+                        <a href="#" class="block px-4 py-2 text-white disabled-link">Riwayat Izin / Cuti HRD</a>
+                    </div>
+                </li>
+
+                <!-- Absensi -->
                 <li class="mb-4">
-                    <a href="{{ asset('finger/finger.php') }}" class="flex items-center px-4 py-2 rounded-lg hover:bg-[#4E71FF]">
+                    <a href="{{ asset('finger/finger.php') }}" class="flex items-center px-4 py-2 rounded-lg hover:bg-[#FF8533] {{ request()->is('finger/*') ? 'active-link' : '' }}">
                         <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -89,6 +136,15 @@
                 </li>
             </ul>
         </nav>
+
+        <div class="mt-auto mb-4"> 
+            <a href="{{ route('logout') }}" class="flex items-center px-4 py-2 rounded-lg hover-highlight">
+                <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>Logout</span>
+            </a>
+        </div>
     </div>
 
     <!-- Main Content -->
@@ -256,21 +312,25 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const dropdown = document.querySelector('.dropdown');
-            const dropdownBtn = document.getElementById('lamaran-kerja-btn');
+        document.addEventListener('DOMContentLoaded', function () {
+            const dropdowns = [
+                { btn: 'lamaran-kerja-btn', menu: 'lamaran-kerja' },
+                { btn: 'karyawan-btn', menu: 'karyawan' },
+                { btn: 'cuti-btn', menu: 'cuti' }
+            ];
 
-            // Toggle dropdown saat tombol diklik
-            dropdownBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                dropdown.classList.toggle('active');
-            });
-
-            // Tutup dropdown saat mengklik di luar area dropdown
-            document.addEventListener('click', function(e) {
-                if (!dropdown.contains(e.target)) {
-                    dropdown.classList.remove('active');
-                }
+            dropdowns.forEach(d => {
+                const btn = document.getElementById(d.btn);
+                const parent = btn.parentElement;
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    parent.classList.toggle('active');
+                });
+                document.addEventListener('click', function (e) {
+                    if (!parent.contains(e.target)) {
+                        parent.classList.remove('active');
+                    }
+                });
             });
         });
     </script>

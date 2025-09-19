@@ -1,8 +1,11 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\P_PelamarController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DataKaryawanController;
 /*
 |--------------------------------------------------------------------------
 | ROUTES UNTUK PELAMAR (Frontend)
@@ -28,8 +31,6 @@ Route::get('/lowongan-kerja/{id}', [P_PelamarController::class, 'showJob'])->nam
 | ROUTES UNTUK ADMIN (Backend)
 |--------------------------------------------------------------------------
 */
-// Dashboard
-Route::get('/', [AdminController::class, 'dashboard'])->name('admin.dashboard');
 // Jobs Management
 Route::get('/jobs', [AdminController::class, 'listJobs'])->name('admin.jobs.list');
 Route::get('/jobs/create', [AdminController::class, 'showJobForm'])->name('admin.jobs.create');
@@ -72,3 +73,68 @@ Route::get('/admin/qrcode', function () {
 // --- Form Builder HRD (lihat & simpan pertanyaan per Job)
 Route::get('/form/fields/{id_job}', [AdminController::class, 'getFieldsByJob'])->name('admin.form.fields.byjob');
 Route::post('/form/builder/save', [AdminController::class, 'saveFormBuilder'])->name('admin.form.builder.save');
+
+
+/*
+----------------------------------------------------------------------------------
+UNTUK SISTEM CUTI
+---------------------------------------------------------------------------------
+*/
+
+/*
+|------------------------------------------------------------------------------------
+| ROUTES UNTUK LOGIN DAN LOGOUT
+|------------------------------------------------------------------------------------
+*/
+// Halaman Login (default)
+Route::get('/', [AuthController::class, 'showLogin'])->name('login');
+
+// Proses Login
+Route::post('/login', [AuthController::class, 'login'])->name('login.process');
+
+Route::get('/admin/dashboard', function () {
+    return view('admin.dashboard');
+})->name('admin.dashboard');
+
+Route::get('/owner/dashboard-owner', function () {
+    return view('owner.dashboard-owner');
+})->name('owner.dashboard-owner');
+
+Route::get('/direktur/dashboard-direktur', function () {
+    return view('direktur.dashboard-direktur');
+})->name('direktur.dashboard-direktur');
+
+Route::get('/karyawan/dashboard-karyawan', function () {
+    return view('karyawan.dashboard-karyawan');
+})->name('karyawan.dashboard-karyawan');
+
+// Route untuk Logout
+Route::get('/logout', [AuthController::class, 'logout'])->name('logout'); // <-- Tambahkan baris ini
+/*
+|------------------------------------------------------------------------------------
+| ROUTES UNTUK CUTI / IZIN HRD (punya hrd kalau dia ngajuin cuti / izin buat sendiri)
+|------------------------------------------------------------------------------------
+*/
+
+/*
+|--------------------------------------------------------------------------
+| ROUTES UNTUK CUTI / IZIN KARYAWAN(punya karyawan kalau dia cuti / izin)
+|--------------------------------------------------------------------------
+*/
+
+/*
+|---------------------------------------------------------------------------------------------
+| ROUTES UNTUK CUTI / IZIN DIREKTUR (punya direktur klaau dia cuti sama acc cuti / izin hrd)
+|----------------------------------------------------------------------------------------------
+*/
+
+/*
+|-----------------------------------------------------------------------------------------------------------------------------
+| ROUTES UNTUK HRD Data dan Perizinan Karyawan
+|-----------------------------------------------------------------------------------------------------------------------------
+*/
+Route::get('/karyawan', [DataKaryawanController::class, 'list'])->name('karyawan.list');
+Route::post('/karyawan', [DataKaryawanController::class, 'store'])->name('karyawan.store');
+Route::put('/karyawan/{id}', [DataKaryawanController::class, 'update'])->name('karyawan.update');
+Route::delete('/karyawan/{id}', [DataKaryawanController::class, 'destroy'])->name('karyawan.destroy');
+Route::get('/karyawan/export', [DataKaryawanController::class, 'export'])->name('karyawan.export');

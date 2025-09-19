@@ -9,44 +9,18 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #e5e7eb;
         }
 
-        .status-label {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-weight: 500;
-            color: #fff;
-        }
-
-        .status-on-progress-label {
-            background-color: #3b82f6;
-        }
-
-        .status-diterima-label {
-            background-color: #21CA57;
-        }
-
-        .status-ditolak-label {
-            background-color: #ef4444;
-        }
-
-        .status-pending-label {
-            background-color: #f59e0b;
-        }
-
-        .status-pool-label {
-            background-color: #6366f1;
-        }
-
-        /* PERBAIKAN: Atur lebar sidebar agar konsisten */
+        /* Sidebar */
         .sidebar {
             width: 250px;
             height: 100vh;
-            background-color: #072A75;
+            background-color: #FF6000;
             color: white;
             padding-top: 2rem;
             position: fixed;
@@ -56,20 +30,18 @@
             transform: translateX(0);
         }
 
-        /* PERBAIKAN: Gunakan flexbox untuk tata letak utama */
         .page-container {
             display: flex;
         }
 
-        /* PERBAIKAN: Atur margin kiri pada konten utama untuk memberikan ruang pada sidebar */
         .main-content {
             margin-left: 250px;
-            /* Cocokkan dengan lebar sidebar */
             flex: 1;
             padding: 2rem;
             overflow-y: auto;
         }
 
+        /* Menu Sidebar */
         .sidebar a {
             padding: 1rem 1.5rem;
             display: flex;
@@ -77,13 +49,22 @@
             font-weight: 500;
             border-left: 4px solid transparent;
             transition: all 0.2s ease;
+            color: #f0f0f0;
         }
 
         .sidebar a:hover {
-            background-color: #1a4294;
+            background-color: rgba(255, 243, 176, 0.7);
             border-left-color: #ffffff;
         }
 
+        .sidebar a.active {
+            background-color: rgba(255, 243, 176, 0.7);
+            border-left-color: #ffffff;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        /* Dropdown */
         .dropdown-menu {
             max-height: 0;
             overflow: hidden;
@@ -91,55 +72,104 @@
         }
 
         .dropdown-menu.active {
-            max-height: 200px;
+
+            max-height: 500px;
             transition: max-height 0.5s ease-in;
         }
 
         .dropdown-item {
             padding-left: 3.5rem;
             font-weight: normal;
+            font-size: 14px;
+            color: #f9f9f9;
+        }
+
+        .dropdown-item.active {
+            background-color: #FF6000;
+            font-weight: 600;
         }
     </style>
 </head>
 
 <body class="bg-gray-200">
     <div class="page-container">
-        <div class="sidebar flex flex-col items-center">
+        <!-- Sidebar -->
+        <div class="sidebar flex flex-col">
             <div class="flex items-center mb-10 px-4">
                 <img src="{{ asset('admin/img/logo.jpg') }}" alt="Logo" class="h-10 w-10 mr-3 rounded-full">
                 <span class="text-xl font-bold">Sistem ERP HR</span>
             </div>
 
             <nav class="w-full">
-                <a href="{{ route('admin.dashboard') }}" class="px-6">
+                <!-- Dashboard -->
+                <a href="{{ route('admin.dashboard') }}" class="{{ request()->is('admin/dashboard') ? 'active' : '' }}">
                     <i class="fa-solid fa-house-chimney mr-3"></i>Dashboard
                 </a>
-                <a href="#" class="flex justify-between items-center px-6" id="lamaran-dropdown-btn">
-                    <span>
-                        <i class="fa-solid fa-briefcase mr-3"></i>Lamaran Kerja
-                    </span>
+
+                <!-- Dropdown Lamaran Kerja -->
+                <a href="#" class="flex justify-between items-center px-6 {{ request()->is('admin/jobs*') || request()->is('admin/pelamar*') || request()->is('admin/qrcode*') ? 'active' : '' }}"
+                    id="lamaran-dropdown-btn">
+                    <span><i class="fa-solid fa-briefcase mr-3"></i>Lamaran Kerja</span>
                     <i class="fa-solid fa-caret-down"></i>
                 </a>
-                <div class="dropdown-menu" id="lamaran-dropdown">
-                    <a href="{{ route('admin.jobs.list') }}" class="dropdown-item">
+                <div class="dropdown-menu {{ request()->is('admin/jobs*') || request()->is('admin/pelamar*') || request()->is('admin/qrcode*') ? 'active' : '' }}"
+                    id="lamaran-dropdown">
+                    <a href="{{ route('admin.jobs.list') }}" class="dropdown-item {{ request()->is('admin/jobs*') ? 'active' : '' }}">
                         <i class="fa-solid fa-list-check mr-3"></i>List Job
                     </a>
-                    <a href="{{ route('admin.pelamar.list') }}" class="dropdown-item">
+                    <a href="{{ route('admin.pelamar.list') }}" class="dropdown-item {{ request()->is('admin/pelamar*') ? 'active' : '' }}">
                         <i class="fa-solid fa-users mr-3"></i>Data Pelamar
                     </a>
-                    <a href="{{ route('admin.form.lamaran') }}" class="dropdown-item">
-                        <i class="fa-solid fa-file-pen mr-3"></i>Edit Form Daftar
-                    </a>
-                    <a href="{{ route('admin.qrcode') }}" class="dropdown-item">
+                    <a href="{{ route('admin.qrcode') }}" class="dropdown-item {{ request()->is('admin/qrcode*') ? 'active' : '' }}">
                         <i class="fa-solid fa-qrcode mr-3"></i>Generate QR
                     </a>
+                    <a href="{{ route('admin.form.lamaran') }}" class="dropdown-item {{ request()->is('admin/form/lamaran*') ? 'active' : '' }}">
+                        <i class="fa-solid fa-file-pen mr-3"></i>Edit Form Lamaran
+                    </a>
                 </div>
-                <a href="{{ asset('finger/finger.php') }}" class="px-6">
+
+                <!-- Dropdown Karyawan -->
+                <a href="#" class="flex justify-between items-center px-6 {{ request()->is('admin/karyawan*') ? 'active' : '' }}"
+                    id="karyawan-dropdown-btn">
+                    <span><i class="fa-solid fa-user-group mr-3"></i>Karyawan</span>
+                    <i class="fa-solid fa-caret-down"></i>
+                </a>
+                <div class="dropdown-menu {{ request()->is('admin/karyawan*') ? 'active' : '' }}" id="karyawan-dropdown">
+                    <a href="{{ route('karyawan.list') }}" class="dropdown-item"><i class="fa-solid fa-solid fa-user-group mr-3"></i>Data Karyawan</a>
+                    <a href="#" class="dropdown-item"><i class="fa-solid fa-file-circle-plus mr-3"></i>Pengajuan Izin</a>
+                    <a href="#" class="dropdown-item"><i class="fa-solid fa-calendar-plus mr-3"></i>Pengajuan Cuti</a>
+                    <a href="#" class="dropdown-item"><i class="fa-solid fa-clock-rotate-left mr-3"></i>Riwayat Izin & Cuti</a>
+                </div>
+
+                <!-- Dropdown Cuti HRD -->
+                <a href="#" class="flex justify-between items-center px-6 {{ request()->is('admin/cuti*') ? 'active' : '' }}"
+                    id="cuti-dropdown-btn">
+                    <span><i class="fa-solid fa-calendar-check mr-3"></i>Cuti HRD</span>
+                    <i class="fa-solid fa-caret-down"></i>
+                </a>
+                <div class="dropdown-menu {{ request()->is('admin/cuti*') ? 'active' : '' }}" id="cuti-dropdown">
+                    <a href="#" class="dropdown-item"><i class="fa-solid fa-file-circle-plus mr-3"></i>Pengajuan Izin/Cuti HRD</a>
+                    <a href="#" class="dropdown-item"><i class="fa-solid fa-clock-rotate-left mr-3"></i>Riwayat Izin/Cuti HRD</a>
+                </div>
+
+                <!-- Absensi -->
+                <a href="{{ asset('finger/finger.php') }}" class="{{ request()->is('absensi*') ? 'active' : '' }}">
                     <i class="fa-solid fa-fingerprint mr-3"></i>Absensi
                 </a>
             </nav>
+
+            <div class="mt-auto mb-4"> <a href="{{ route('logout') }}"
+                    class="flex items-center px-4 py-2 rounded-lg hover-highlight">
+                    <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    <span>Logout</span>
+                </a>
+            </div>
+
         </div>
 
+        <!-- Main Content -->
         <div class="main-content">
             <div class="flex justify-between items-center mb-8">
                 <h1 class="text-2xl font-bold text-gray-800">List Job</h1>
@@ -148,11 +178,12 @@
                     <svg class="h-8 w-8 rounded-full border-2 border-gray-500" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M5.121 17.804A7.962 7.962 0 0112 15a7.962 7.962 0 016.879 2.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            d="M5.121 17.804A7.962 7.962 0 0112 15a7.962 7.962 0 016.879 2.804M15 11a3 3 0 11-6 0 3 0 016 0z" />
                     </svg>
                 </div>
             </div>
 
+            {{-- Alert --}}
             @if (session('success'))
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4">
                 <span class="block sm:inline">{{ session('success') }}</span>
@@ -164,6 +195,7 @@
             </div>
             @endif
 
+            <!-- Card Job List -->
             <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-800">Semua Lowongan</h2>
@@ -176,12 +208,9 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="w-1/2 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Posisi
-                                </th>
-                                <th class="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status
-                                </th>
-                                <th class="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi
-                                </th>
+                                <th class="w-1/2 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Posisi</th>
+                                <th class="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="w-1/4 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -192,13 +221,11 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     @if (($job['status'] ?? 'N/A') === 'aktif')
-                                    <span
-                                        class="px-2 inline-flex text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                    <span class="px-2 inline-flex text-xs font-semibold rounded-full bg-green-100 text-green-800">
                                         Aktif
                                     </span>
                                     @else
-                                    <span
-                                        class="px-2 inline-flex text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                    <span class="px-2 inline-flex text-xs font-semibold rounded-full bg-red-100 text-red-800">
                                         Non-aktif
                                     </span>
                                     @endif
@@ -206,32 +233,26 @@
                                 <td class="px-6 py-4 text-sm flex items-center space-x-2">
                                     {{-- Tombol Aktif / Nonaktif --}}
                                     @if (($job['status'] ?? 'N/A') === 'aktif')
-                                    <form action="{{ route('admin.jobs.deactivate', $job['id_job']) }}" method="POST"
-                                        class="inline">
+                                    <form action="{{ route('admin.jobs.deactivate', $job['id_job']) }}" method="POST" class="inline">
                                         @csrf
                                         @method('PUT')
-                                        <button type="submit"
-                                            class="bg-yellow-500 text-white px-3 py-1 rounded-md text-xs hover:bg-yellow-600">
+                                        <button type="submit" class="bg-yellow-500 text-white px-3 py-1 rounded-md text-xs hover:bg-yellow-600">
                                             Non-aktifkan
                                         </button>
                                     </form>
                                     @else
-                                    <form action="{{ route('admin.jobs.activate', $job['id_job']) }}" method="POST"
-                                        class="inline">
+                                    <form action="{{ route('admin.jobs.activate', $job['id_job']) }}" method="POST" class="inline">
                                         @csrf
                                         @method('PUT')
-                                        <button type="submit"
-                                            class="bg-green-500 text-white px-3 py-1 rounded-md text-xs hover:bg-green-600">
+                                        <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded-md text-xs hover:bg-green-600">
                                             Aktifkan
                                         </button>
                                     </form>
                                     @endif
-                                    
+
                                     {{-- Tombol Edit --}}
                                     <a href="{{ route('admin.jobs.edit', $job['id_job']) }}"
-                                        class="bg-blue-500 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-600">
-                                        Edit
-                                    </a>
+                                        class="bg-blue-500 text-white px-3 py-1 rounded-md text-xs hover:bg-blue-600">Edit</a>
 
                                     {{-- Tombol Hapus --}}
                                     <form action="{{ route('admin.jobs.delete', $job['id_job']) }}" method="POST"
@@ -239,8 +260,7 @@
                                         class="inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit"
-                                            class="bg-red-500 text-white px-3 py-1 rounded-md text-xs hover:bg-red-600">
+                                        <button type="submit" class="bg-red-500 text-white px-3 py-1 rounded-md text-xs hover:bg-red-600">
                                             Hapus
                                         </button>
                                     </form>
@@ -248,9 +268,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="3" class="px-6 py-4 text-center text-gray-500">
-                                    Belum ada lowongan.
-                                </td>
+                                <td colspan="3" class="px-6 py-4 text-center text-gray-500">Belum ada lowongan.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -262,13 +280,28 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const dropdownBtn = document.getElementById('lamaran-dropdown-btn');
-            const dropdownMenu = document.getElementById('lamaran-dropdown');
+            // Dropdown toggle
+            const dropdowns = [{
+                    btn: 'lamaran-dropdown-btn',
+                    menu: 'lamaran-dropdown'
+                },
+                {
+                    btn: 'karyawan-dropdown-btn',
+                    menu: 'karyawan-dropdown'
+                },
+                {
+                    btn: 'cuti-dropdown-btn',
+                    menu: 'cuti-dropdown'
+                }
+            ];
 
-            // Toggle dropdown saat tombol diklik
-            dropdownBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                dropdownMenu.classList.toggle('active');
+            dropdowns.forEach(d => {
+                const btn = document.getElementById(d.btn);
+                const menu = document.getElementById(d.menu);
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    menu.classList.toggle('active');
+                });
             });
         });
     </script>

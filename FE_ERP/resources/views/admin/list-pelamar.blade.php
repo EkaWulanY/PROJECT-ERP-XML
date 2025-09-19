@@ -45,7 +45,7 @@
         .sidebar {
             width: 250px;
             height: 100vh;
-            background-color: #072A75;
+            background-color: #FF6600; /* 🔹 Warna orange */
             color: white;
             padding-top: 2rem;
             position: fixed;
@@ -69,8 +69,14 @@
         }
 
         .sidebar a:hover {
-            background-color: #1a4294;
+            background-color: rgba(255, 255, 255, 0.2);
             border-left-color: #ffffff;
+        }
+
+        /* 🔹 Active link style */
+        .sidebar a.active {
+            background-color: rgba(255, 255, 0, 0.2);
+            border-left-color: yellow;
         }
 
         .dropdown-menu {
@@ -80,14 +86,18 @@
         }
 
         .dropdown-menu.active {
-            max-height: 200px;
+            max-height: 500px;
             transition: max-height 0.5s ease-in;
         }
 
         .dropdown-item {
             padding-left: 3.5rem;
-            /* Indent for dropdown items */
             font-weight: normal;
+        }
+
+        .dropdown-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -100,9 +110,12 @@
         </div>
 
         <nav class="w-full">
-            <a href="{{ route('admin.dashboard') }}" class="px-6">
+            <a href="{{ route('admin.dashboard') }}" 
+               class="px-6 {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <i class="fa-solid fa-house-chimney mr-3"></i>Dashboard
             </a>
+
+            <!-- 🔹 Lamaran kerja -->
             <a href="#" class="flex justify-between items-center px-6" id="lamaran-dropdown-btn">
                 <span>
                     <i class="fa-solid fa-briefcase mr-3"></i>Lamaran Kerja
@@ -110,31 +123,77 @@
                 <i class="fa-solid fa-caret-down"></i>
             </a>
             <div class="dropdown-menu" id="lamaran-dropdown">
-                <a href="{{ route('admin.jobs.list') }}" class="dropdown-item">
+                <a href="{{ route('admin.jobs.list') }}" 
+                   class="dropdown-item {{ request()->routeIs('admin.jobs.list') ? 'active' : '' }}">
                     <i class="fa-solid fa-list-check mr-3"></i>List Job
                 </a>
-                <a href="{{ route('admin.pelamar.list') }}" class="dropdown-item">
+                <a href="{{ route('admin.pelamar.list') }}" 
+                   class="dropdown-item {{ request()->routeIs('admin.pelamar.list') ? 'active' : '' }}">
                     <i class="fa-solid fa-users mr-3"></i>Data Pelamar
                 </a>
-                <a href="{{ route('admin.form.lamaran') }}" class="dropdown-item">
+                <a href="{{ route('admin.form.lamaran') }}" 
+                   class="dropdown-item {{ request()->routeIs('admin.form.lamaran') ? 'active' : '' }}">
                     <i class="fa-solid fa-file-pen mr-3"></i>Edit Form Daftar
                 </a>
-                <a href="{{ route('admin.qrcode') }}" class="dropdown-item">
+                <a href="{{ route('admin.qrcode') }}" 
+                   class="dropdown-item {{ request()->routeIs('admin.qrcode') ? 'active' : '' }}">
                     <i class="fa-solid fa-qrcode mr-3"></i>Generate QR
                 </a>
             </div>
-            <a href="{{ asset('finger/finger.php') }}" class="px-6">
+
+            <!-- 🔹 Karyawan -->
+            <a href="#" class="flex justify-between items-center px-6" id="karyawan-dropdown-btn">
+                <span>
+                    <i class="fa-solid fa-id-badge mr-3"></i>Karyawan
+                </span>
+                <i class="fa-solid fa-caret-down"></i>
+            </a>
+            <div class="dropdown-menu" id="karyawan-dropdown">
+                <a href="{{ route('karyawan.list') }}" 
+                   class="dropdown-item {{ request()->routeIs('karyawan.list') ? 'active' : '' }}">
+                   <i class="fa-solid fa-users-gear mr-3"></i>Data Karyawan
+                </a>
+                <a href="#" class="dropdown-item disabled"><i class="fa-solid fa-calendar-check mr-3"></i>Pengajuan Cuti</a>
+                <a href="#" class="dropdown-item disabled"><i class="fa-solid fa-clock mr-3"></i>Pengajuan Izin</a>
+                <a href="#" class="dropdown-item disabled"><i class="fa-solid fa-book mr-3"></i>Riwayat Izin & Cuti</a>
+            </div>
+
+            <!-- 🔹 Cuti HRD -->
+            <a href="#" class="flex justify-between items-center px-6" id="cuti-dropdown-btn">
+                <span>
+                    <i class="fa-solid fa-calendar-days mr-3"></i>Cuti HRD
+                </span>
+                <i class="fa-solid fa-caret-down"></i>
+            </a>
+            <div class="dropdown-menu" id="cuti-dropdown">
+                <a href="#" class="dropdown-item disabled"><i class="fa-solid fa-envelope-open mr-3"></i>Pengajuan Izin/Cuti HRD</a>
+                <a href="#" class="dropdown-item disabled"><i class="fa-solid fa-history mr-3"></i>Riwayat Izin/Cuti HRD</a>
+            </div>
+
+            <!-- 🔹 Absensi -->
+            <a href="{{ asset('finger/finger.php') }}" 
+               class="px-6 {{ request()->is('finger/*') ? 'active' : '' }}">
                 <i class="fa-solid fa-fingerprint mr-3"></i>Absensi
             </a>
         </nav>
+
+        <div class="mt-auto mb-4"> <a href="{{ route('logout') }}"
+                class="flex items-center px-4 py-2 rounded-lg hover-highlight">
+                <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span>Logout</span>
+            </a>
+        </div>
+        
     </div>
 
     <div class="flex-grow content-area">
-        <div class="bg-[#072A75] text-white p-4 flex justify-end items-center shadow-lg">
+        <div class="bg-[#FF6600] text-white p-4 flex justify-end items-center shadow-lg">
             <div class="flex items-center">
                 <span class="mr-2">Admin</span>
                 <svg class="h-8 w-8 rounded-full border-2 border-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A7.962 7.962 0 0112 15a7.962 7.962 0 016.879 2.804M15 11a3 3 0 11-6 0 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A7.962 7.962 0 0112 15a7.962 7.962 0 016.879 2.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
             </div>
         </div>
@@ -444,14 +503,18 @@
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('#pelamar-table, #pending-table, #pool-table, #accept-table, #reject-table').DataTable();
+            // Dropdown toggle
+            const dropdowns = [
+                { btn: '#lamaran-dropdown-btn', menu: '#lamaran-dropdown' },
+                { btn: '#karyawan-dropdown-btn', menu: '#karyawan-dropdown' },
+                { btn: '#cuti-dropdown-btn', menu: '#cuti-dropdown' },
+            ];
 
-            const dropdownBtn = document.getElementById('lamaran-dropdown-btn');
-            const dropdownMenu = document.getElementById('lamaran-dropdown');
-
-            dropdownBtn.addEventListener('click', function(event) {
-                event.preventDefault();
-                dropdownMenu.classList.toggle('active');
+            dropdowns.forEach(d => {
+                $(d.btn).on('click', function(e) {
+                    e.preventDefault();
+                    $(d.menu).toggleClass('active');
+                });
             });
         });
 
@@ -537,5 +600,4 @@
         }
     </script>
 </body>
-
 </html>

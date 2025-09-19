@@ -99,3 +99,33 @@ $routes->get('qrcode/job/(:num)', 'QRCodeController::job/$1');
 $routes->get('qrcode/sistem', 'QRCodeController::sistem');
 $routes->get('download/job/(:num)', 'QRCodeController::downloadJob/$1');
 $routes->get('download/sistem', 'QRCodeController::downloadSistem');
+
+// ROUTES SISTEM CUTI & IZIN KARYAWAN
+$routes->group('api', ['namespace' => 'App\Controllers\Cuti'], function($routes) {
+
+    // Endpoint untuk admin (HRD bisa tambah & lihat semua admin)
+    // Auth Admin
+    $routes->get('admin', 'AuthAdminController::index');
+    $routes->post('admin', 'AuthAdminController::create');
+    $routes->post('admin/login', 'AuthAdminController::login');
+    $routes->post('admin/logout', 'AuthAdminController::logout');
+    $routes->put('admin/(:segment)/password', 'AuthAdminController::updatePassword/$1');
+
+});
+
+$routes->group('api', function($routes) {
+    $routes->post('karyawan/login', 'Cuti\AuthKaryawanController::login');
+    $routes->post('karyawan/logout', 'Cuti\AuthKaryawanController::logout');
+    $routes->put('karyawan/password/(:segment)', 'Cuti\AuthKaryawanController::updatePassword/$1');
+});
+
+$routes->group('api', function($routes) {
+    $routes->post('karyawan', 'Cuti\KaryawanController::create');
+    $routes->get('karyawan', 'Cuti\KaryawanController::index');
+    $routes->get('karyawan/(:segment)', 'Cuti\KaryawanController::show/$1');
+    $routes->put('karyawan/(:segment)', 'Cuti\KaryawanController::update/$1');
+    $routes->delete('karyawan/(:segment)', 'Cuti\KaryawanController::delete/$1');
+    $routes->get('karyawan/export/excel', 'Cuti\KaryawanController::exportExcel');
+});
+
+$routes->get('/bot/polling', 'Bot::polling');
