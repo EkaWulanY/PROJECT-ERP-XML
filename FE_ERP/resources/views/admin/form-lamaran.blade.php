@@ -135,7 +135,7 @@
                          0c-.29 0-.62.02-.97.05 1.16.84 1.97 
                          1.97 1.97 3.45V20h6v-3.5c0-2.33-4.67-3.5-7-3.5z" />
                     </svg>
-                    Karyawan
+                    Cuti Karyawan
                 </div>
                 <svg id="dropdown-karyawan-arrow" xmlns="http://www.w3.org/2000/svg"
                     class="h-5 w-5 ml-2 transition-transform duration-300 transform"

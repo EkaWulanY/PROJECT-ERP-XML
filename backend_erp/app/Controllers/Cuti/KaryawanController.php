@@ -30,11 +30,11 @@ class KaryawanController extends ResourceController
     // === Tambah karyawan baru ===
     public function create()
     {
-        $nama     = $this->request->getVar('nama');
-        $jabatan  = $this->request->getVar('jabatan');
-        $tipe     = $this->request->getVar('tipe');
-        $password = $this->request->getVar('password');
-        $username = $this->request->getVar('username_telegram');
+        $nama      = $this->request->getVar('nama');
+        $jabatan   = $this->request->getVar('jabatan');
+        $tipe      = $this->request->getVar('tipe');
+        $password  = $this->request->getVar('password');
+        $username  = $this->request->getVar('username_telegram');
 
         if (!$nama || !$jabatan || !$tipe || !$password) {
             return $this->failValidationErrors("Semua field wajib diisi");
@@ -44,12 +44,12 @@ class KaryawanController extends ResourceController
         $newID = $this->model->generateID();
 
         $data = [
-            'id_karyawan'      => $newID,
-            'nama'             => $nama,
-            'jabatan'          => $jabatan,
-            'tipe'             => $tipe,
-            'password'         => password_hash($password, PASSWORD_BCRYPT), // hashed
-            'password_text'    => $password, // plain text untuk kolom password_text
+            'id_karyawan'       => $newID,
+            'nama'              => $nama,
+            'jabatan'           => $jabatan,
+            'tipe'              => $tipe,
+            'password'          => password_hash($password, PASSWORD_BCRYPT), // hashed
+            'password_text'     => $password, // plain text untuk kolom password_text
             'username_telegram' => $username
         ];
 
@@ -79,6 +79,13 @@ class KaryawanController extends ResourceController
     // === Update data karyawan ===
     public function update($id = null)
     {
+        // Ambil ID karyawan yang sedang login dari sesi atau token
+        // Contoh: $loggedInUserId = $this->session->get('id_karyawan');
+        // Contoh: $loggedInUserId = $this->authService->getUserId(); // tergantung implementasi auth
+        
+        // Asumsi ini adalah admin yang mengupdate, tidak ada otentikasi
+        // Perhatian: Ini berpotensi jadi celah keamanan
+        
         // Ambil body JSON jadi array
         $data = $this->request->getJSON(true);
         if (!$data) {
@@ -86,6 +93,7 @@ class KaryawanController extends ResourceController
             $data = $this->request->getRawInput();
         }
 
+        // Pastikan karyawan yang diupdate ditemukan
         if (!$this->model->find($id)) {
             return $this->failNotFound("Karyawan tidak ditemukan");
         }
@@ -93,11 +101,23 @@ class KaryawanController extends ResourceController
         // Jika password diisi, update hash + plain text
         if (isset($data['password']) && !empty($data['password'])) {
             $plainPassword       = $data['password']; // simpan dulu
-            $data['password']      = password_hash($plainPassword, PASSWORD_BCRYPT);
+            $data['password']    = password_hash($plainPassword, PASSWORD_BCRYPT);
             $data['password_text'] = $plainPassword;
         } else {
             unset($data['password']);
             unset($data['password_text']);
+        }
+        
+        // Periksa apakah field 'username_telegram' ada dan tidak kosong
+        if (isset($data['username_telegram']) && !empty($data['username_telegram'])) {
+            // Kirim notifikasi Telegram (kalau library ada)
+            try {
+                $telegram = new \App\Libraries\Telegram();
+                $pesan = "Halo <b>{$data['nama']}</b> 👋\nAkun Telegram Anda berhasil diperbarui di sistem HRD.\nAnda sekarang dapat menerima notifikasi dari kami.";
+                $telegram->sendMessage($data['username_telegram'], $pesan);
+            } catch (\Throwable $th) {
+                // biar gak error kalau library Telegram belum ada
+            }
         }
 
         $this->model->update($id, $data);
@@ -107,7 +127,6 @@ class KaryawanController extends ResourceController
             'message' => 'Data karyawan berhasil diperbarui'
         ]);
     }
-
 
     // === Hapus karyawan ===
     public function delete($id = null)

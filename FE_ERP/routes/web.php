@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\P_PelamarController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DataKaryawanController;
+use App\Controllers\PerizinanKaryawanController;
 /*
 |--------------------------------------------------------------------------
 | ROUTES UNTUK PELAMAR (Frontend)

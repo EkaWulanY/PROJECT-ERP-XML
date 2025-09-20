@@ -131,7 +131,7 @@
                 <!-- Dropdown Karyawan -->
                 <a href="#" class="flex justify-between items-center px-6 {{ request()->is('admin/karyawan*') ? 'active' : '' }}"
                     id="karyawan-dropdown-btn">
-                    <span><i class="fa-solid fa-user-group mr-3"></i>Karyawan</span>
+                    <span><i class="fa-solid fa-user-group mr-3"></i>Cuti Karyawan</span>
                     <i class="fa-solid fa-caret-down"></i>
                 </a>
                 <div class="dropdown-menu {{ request()->is('admin/karyawan*') ? 'active' : '' }}" id="karyawan-dropdown">

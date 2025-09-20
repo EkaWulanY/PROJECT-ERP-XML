@@ -144,7 +144,7 @@
             <!-- 🔹 Karyawan -->
             <a href="#" class="flex justify-between items-center px-6" id="karyawan-dropdown-btn">
                 <span>
-                    <i class="fa-solid fa-id-badge mr-3"></i>Karyawan
+                    <i class="fa-solid fa-id-badge mr-3"></i>Cuti Karyawan
                 </span>
                 <i class="fa-solid fa-caret-down"></i>
             </a>
