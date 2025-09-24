@@ -110,7 +110,6 @@ function getUsers($IP, $Key = "0")
 
         .dropdown-menu a {
             padding-left: 3rem;
-            opacity: 0.8;
             /* Menambahkan efek non-aktif */
         }
 
@@ -237,8 +236,7 @@ function getUsers($IP, $Key = "0")
             <span class="text-xl font-bold">Sistem ERP HR</span>
         </div>
         <!-- Dashboard -->
-        <a href="/admin/dashboard"
-            class="flex items-center px-4 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition {{ request()->is('admin/dashboard') ? 'bg-orange-300 font-bold text-black' : 'text-white' }}">
+        <a href="/admin/dashboard" class="flex items-center px-4 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition {{ request()->is('admin/dashboard') ? 'bg-orange-300 font-bold text-black' : 'text-white' }}">
             <i class="fa-solid fa-house-chimney mr-3"></i>
             <span>Dashboard</span>
         </a>
@@ -276,7 +274,7 @@ function getUsers($IP, $Key = "0")
                 </a>
                 <a href="/admin/qrcode">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M3 11h8V3H3v8zm2-6h4v4H5V5zM3 21h8v-8H3v8zm2-6h4v4H5v-4zm8-12v8h8V3h-8zm6 6h-4V5h4v4zm0 6h-2v2h-2v-2h-2v2h-2v-2h-2v2H9v-2H7v2H5v-2H3v2h8v-2h-2v-2h2v-2h-2v-2h2v-2h-2v2h-2v2h-2v2h-2v-2h-2v2h-2v-2h-2v-2h-2v-2h-2v2h-2V3z" />
+                        <path d="M3 11h8V3H3v8zm2-6h4v4H5V5zM3 21h8v-8H3v8zm2-6h4v4H5v-4zm8-12v8h8V3h-8zm6 6h-4V5h4v4zm0 6h-2v2h-2v-2h-2v2h-2v-2h-2v2H9v-2H7v2H5v-2H3v2h8v-2h-2v-2h2v-2h-2v-2h2v2h-2v2h-2v2h-2v-2h-2v2h-2v-2h-2v-2h-2v-2h-2v2h-2V3z" />
                     </svg>
                     Generate QR
                 </a>
@@ -299,25 +297,17 @@ function getUsers($IP, $Key = "0")
             <div id="dropdown-menu-karyawan" class="dropdown-menu">
                 <a href="/karyawan">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 
-            1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 
-            1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
                     </svg>
                     Data Karyawan
                 </a>
-                <a href="#">
+                <a href="/hrd/perizinan-karyawan">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M8 7h8v2H8V7zm0 4h8v2H8v-2zm0 4h5v2H8v-2z" />
                     </svg>
-                    Pengajuan Cuti
+                    Perizinan Karyawan
                 </a>
-                <a href="#">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M5 12h14v2H5z" />
-                    </svg>
-                    Pengajuan Izin
-                </a>
-                <a href="#">
+                <a href="/hrd/riwayat-perizinan">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h10v2H4v-2z" />
                     </svg>
@@ -343,7 +333,7 @@ function getUsers($IP, $Key = "0")
             <div id="dropdown-menu-cuti-hrd" class="dropdown-menu">
                 <!-- Tautan dalam posisi non-aktif -->
                 <a href="#">Pengajuan izin /cuti HRD</a>
-                <a href="#">Riwayat izin / cuti hrd</a>
+                <a href="#">Riwayat izin / cuti HRD</a>
             </div>
         </div>
 
@@ -527,5 +517,4 @@ function getUsers($IP, $Key = "0")
         });
     </script>
 </body>
-
 </html>

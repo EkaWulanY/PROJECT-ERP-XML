@@ -136,9 +136,8 @@
                 </a>
                 <div class="dropdown-menu {{ request()->is('admin/karyawan*') ? 'active' : '' }}" id="karyawan-dropdown">
                     <a href="{{ route('karyawan.list') }}" class="dropdown-item"><i class="fa-solid fa-solid fa-user-group mr-3"></i>Data Karyawan</a>
-                    <a href="#" class="dropdown-item"><i class="fa-solid fa-file-circle-plus mr-3"></i>Pengajuan Izin</a>
-                    <a href="#" class="dropdown-item"><i class="fa-solid fa-calendar-plus mr-3"></i>Pengajuan Cuti</a>
-                    <a href="#" class="dropdown-item"><i class="fa-solid fa-clock-rotate-left mr-3"></i>Riwayat Izin & Cuti</a>
+                    <a href="{{ route('perizinan.karyawan') }} " class="dropdown-item"><i class="fa-solid fa-file-circle-plus mr-3"></i>Perizinan Karyawan</a>
+                    <a href="{{ route('riwayat.perizinan') }}" class="dropdown-item"><i class="fa-solid fa-clock-rotate-left mr-3"></i>Riwayat Izin & Cuti</a>
                 </div>
 
                 <!-- Dropdown Cuti HRD -->

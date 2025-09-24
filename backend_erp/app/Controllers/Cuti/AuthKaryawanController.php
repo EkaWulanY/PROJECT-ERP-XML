@@ -14,8 +14,8 @@ class AuthKaryawanController extends BaseController
         $this->model = new KaryawanModel();
     }
 
-    // === Login Karyawan ===
-    public function login()
+// === Login Karyawan ===
+public function login()
 {
     helper('jwt');
 
@@ -44,19 +44,21 @@ class AuthKaryawanController extends BaseController
         ])->setStatusCode(401);
     }
 
-    // Generate JWT
+    $isDefaultPassword = password_verify("123456", $karyawan['password']);
+
     $token = generateJWT([
         'id_karyawan' => $karyawan['id_karyawan'],
         'nama'        => $karyawan['nama'],
         'jabatan'     => $karyawan['jabatan'],
-        'role'        => 'karyawan' // <-- tambahin role biar jelas
+        'role'        => 'karyawan'
     ]);
 
     return $this->response->setJSON([
-        'status'  => 'success',
-        'message' => 'Login berhasil',
-        'token'   => $token,
-        'role'    => 'karyawan' // <-- frontend bisa redirect ke dashboard karyawan
+        'status'    => 'success',
+        'message'   => 'Login berhasil',
+        'token'     => $token,
+        'role'      => 'karyawan',
+        'forceChangePassword' => $isDefaultPassword // frontend bisa paksa ganti
     ]);
 }
 
@@ -70,40 +72,52 @@ class AuthKaryawanController extends BaseController
     }
 
     // === Update Password Karyawan ===
-    public function updatePassword($id = null)
-    {
-        $passwordLama = $this->request->getVar('password_lama');
-        $passwordBaru = $this->request->getVar('password_baru');
+public function updatePassword($id = null)
+{
+    // Ambil data dari request JSON
+    $data = $this->request->getJSON(true);
 
-        if (!$passwordLama || !$passwordBaru) {
-            return $this->response->setJSON([
-                'status'  => 'error',
-                'message' => 'Password lama dan baru wajib diisi'
-            ])->setStatusCode(400);
-        }
+    $passwordLama = $data['password_lama'] ?? null;
+    $passwordBaru = $data['password_baru'] ?? null;
 
-        $karyawan = $this->model->find($id);
-        if (!$karyawan) {
-            return $this->response->setJSON([
-                'status'  => 'error',
-                'message' => 'Karyawan tidak ditemukan'
-            ])->setStatusCode(404);
-        }
-
-        if (!password_verify($passwordLama, $karyawan['password'])) {
-            return $this->response->setJSON([
-                'status'  => 'error',
-                'message' => 'Password lama salah'
-            ])->setStatusCode(401);
-        }
-
-        $this->model->update($id, [
-            'password' => password_hash($passwordBaru, PASSWORD_BCRYPT)
-        ]);
-
+    if (!$passwordLama || !$passwordBaru) {
         return $this->response->setJSON([
-            'status'  => 'success',
-            'message' => 'Password berhasil diubah'
-        ]);
+            'status'  => 'error',
+            'message' => 'Password lama dan password baru wajib diisi'
+        ])->setStatusCode(400);
     }
+
+    // Cek karyawan berdasarkan ID
+    $karyawan = $this->model->find($id);
+    if (!$karyawan) {
+        return $this->response->setJSON([
+            'status'  => 'error',
+            'message' => 'Karyawan tidak ditemukan'
+        ])->setStatusCode(404);
+    }
+
+    // Cek apakah password lama cocok
+    if (!password_verify($passwordLama, $karyawan['password'])) {
+        return $this->response->setJSON([
+            'status'  => 'error',
+            'message' => 'Password lama salah'
+        ])->setStatusCode(401);
+    }
+
+    // Update password baru (hash dulu)
+    $hashed = password_hash($passwordBaru, PASSWORD_BCRYPT);
+    $this->model->update($id, [
+        'password' => $hashed
+    ]);
+
+    // Ambil data setelah update untuk memastikan
+    $updated = $this->model->find($id);
+
+    return $this->response->setJSON([
+        'status'  => 'success',
+        'message' => 'Password berhasil diubah',
+        'debug_hash' => $updated['password'] // debug sementara
+    ]);
+}
+
 }

@@ -104,26 +104,58 @@ $routes->get('download/sistem', 'QRCodeController::downloadSistem');
 $routes->group('api', ['namespace' => 'App\Controllers\Cuti'], function($routes) {
 
     // Endpoint untuk admin (HRD bisa tambah & lihat semua admin)
-    // Auth Admin
+    // Login Admin
     $routes->get('admin', 'AuthAdminController::index');
     $routes->post('admin', 'AuthAdminController::create');
     $routes->post('admin/login', 'AuthAdminController::login');
     $routes->post('admin/logout', 'AuthAdminController::logout');
     $routes->put('admin/(:segment)/password', 'AuthAdminController::updatePassword/$1');
-
+    $routes->put('admin/(:segment)/reset-password', 'AuthAdminController::resetPassword/$1');
 });
 
+// Login karyawan & data karyawan
 $routes->group('api', function($routes) {
     $routes->post('karyawan/login', 'Cuti\AuthKaryawanController::login');
     $routes->post('karyawan/logout', 'Cuti\AuthKaryawanController::logout');
     $routes->put('karyawan/password/(:segment)', 'Cuti\AuthKaryawanController::updatePassword/$1');
-});
 
-$routes->group('api', function($routes) {
     $routes->post('karyawan', 'Cuti\KaryawanController::create');
     $routes->get('karyawan', 'Cuti\KaryawanController::index');
     $routes->get('karyawan/(:segment)', 'Cuti\KaryawanController::show/$1');
     $routes->put('karyawan/(:segment)', 'Cuti\KaryawanController::update/$1');
     $routes->delete('karyawan/(:segment)', 'Cuti\KaryawanController::delete/$1');
     $routes->get('karyawan/export/excel', 'Cuti\KaryawanController::exportExcel');
+    $routes->put('karyawan/reset-password/(:segment)', 'Cuti\KaryawanController::resetPassword/$1');
+});
+
+// Cuti untuk semua user
+$routes->group('cuti', ['namespace' => 'App\Controllers\Cuti'], function($routes) {
+    $routes->get('/', 'CutiController::index');
+    $routes->get('(:segment)', 'CutiController::show/$1');
+    $routes->post('/', 'CutiController::create');
+    $routes->post('backup/(:segment)', 'CutiController::aksiBackup/$1');
+    $routes->post('progress/hrd/(:segment)', 'CutiController::progressHRD/$1');
+    $routes->post('progress/direktur/(:segment)', 'CutiController::progressDirektur/$1');
+    $routes->post('progress/owner/(:segment)', 'CutiController::progressOwner/$1');
+    $routes->post('status/(:segment)', 'CutiController::updateStatus/$1');
+});
+
+// ===================== IZIN =====================
+$routes->group('api/izin', ['filter' => 'auth'], function($routes) {
+    // Buat izin baru (Karyawan / HRD / Direktur)
+    $routes->post('/', 'Cuti\IzinController::create');
+    // List semua izin (sesuai role)
+    $routes->get('/', 'Cuti\IzinController::index');
+    // Detail izin tertentu
+    $routes->get('(:segment)', 'Cuti\IzinController::view/$1');
+    // Respon backup (terima / tolak)
+    $routes->post('backup', 'Cuti\IzinController::backupRespond');
+    // Aksi HRD / Direktur / Owner (approve / tolak)
+    $routes->put('hrd/action/(:segment)', 'Cuti\IzinController::hrdAction/$1');
+    // Update izin (hanya kalau ditolak)
+    $routes->put('(:segment)', 'Cuti\IzinController::update/$1');
+    // Ambil daftar backup aktif
+    $routes->get('active-backups', 'Cuti\IzinController::activeBackups');
+    // Hitung izin per type / tahun
+    $routes->get('count', 'Cuti\IzinController::countByType');
 });

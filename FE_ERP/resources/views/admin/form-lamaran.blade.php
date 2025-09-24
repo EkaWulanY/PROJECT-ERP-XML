@@ -154,24 +154,48 @@
                 <a href="{{ route('karyawan.list') }}" class="{{ request()->routeIs('karyawan.list') ? 'active-menu' : '' }}">
                     Data Karyawan
                 </a>
-                <a href="#">Pengajuan Cuti</a>
-                <a href="#">Pengajuan Izin</a>
-                <a href="#">Riwayat Izin & Cuti</a>
+                <a href="{{ route('perizinan.karyawan') }}">Perizinan Karyawan</a>
+                <a href="{{ route('riwayat.perizinan') }} ">Riwayat Izin & Cuti</a>
             </div>
         </div>
 
 
         {{-- 🔹 Dropdown Cuti HRD (masih non aktif) --}}
         <div class="w-full">
-            <button class="dropdown-btn w-full text-left flex items-center justify-between disabled">
+            <button id="dropdown-karyawan-btn" class="dropdown-btn w-full text-left focus:outline-none flex items-center justify-between">
                 <div class="flex items-center">
-                    📝 Cuti HRD
+                    <!-- Ganti SVG sesuai ikon Karyawan -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 
+                         3 1.34 3 3 3zm-8 0c1.66 0 
+                         2.99-1.34 2.99-3S9.66 5 8 
+                         5 5 6.34 5 8s1.34 3 3 3zm0 
+                         2c-2.33 0-7 1.17-7 3.5V20h14v-3.5C15 
+                         14.17 10.33 13 8 13zm8 
+                         0c-.29 0-.62.02-.97.05 1.16.84 1.97 
+                         1.97 1.97 3.45V20h6v-3.5c0-2.33-4.67-3.5-7-3.5z" />
+                    </svg>
+                    Cuti Karyawan
                 </div>
-                <span>▼</span>
+                <svg id="dropdown-karyawan-arrow" xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 ml-2 transition-transform duration-300 transform"
+                    viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd"
+                        d="M5.293 7.293a1 1 0 011.414 0L10 
+                   10.586l3.293-3.293a1 1 0 
+                   111.414 1.414l-4 4a1 1 0 
+                   01-1.414 0l-4-4a1 1 0 
+                   010-1.414z"
+                        clip-rule="evenodd" />
+                </svg>
             </button>
-            <div class="dropdown-menu disabled">
-                <a href="#">Pengajuan Izin / Cuti HRD</a>
-                <a href="#">Riwayat Izin / Cuti HRD</a>
+
+            <div id="dropdown-karyawan-menu" class="dropdown-menu">
+                <a href="{{ route('karyawan.list') }}" class="{{ request()->routeIs('karyawan.list') ? 'active-menu' : '' }}">
+                    Data Karyawan
+                </a>
+                <a href="#">Perizinan Karyawan</a>
+                <a href="#">Riwayat Izin & Cuti</a>
             </div>
         </div>
 
@@ -477,7 +501,6 @@
             dropdownKaryawanMenu.style.display = isOpen ? 'none' : 'block';
             dropdownKaryawanArrow.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
         });
-
 
         document.addEventListener('click', (event) => {
             if (!dropdownBtn.contains(event.target) && !dropdownMenu.contains(event.target)) {

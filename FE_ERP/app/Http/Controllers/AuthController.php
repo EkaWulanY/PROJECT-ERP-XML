@@ -10,7 +10,7 @@ use Firebase\JWT\Key;
 
 class AuthController extends Controller
 {
-    // Menampilkan halaman login
+    // Tampilkan form login
     public function showLogin()
     {
         return view('auth.login');
@@ -28,7 +28,7 @@ class AuthController extends Controller
         $password = $request->password;
 
         try {
-            // --- Coba Login Sebagai Karyawan Terlebih Dahulu ---
+            // --- Login Karyawan ---
             $karyawanResponse = Http::post('http://localhost:8080/api/karyawan/login', [
                 'nama' => $nama,
                 'password' => $password,
@@ -36,25 +36,31 @@ class AuthController extends Controller
 
             if ($karyawanResponse->successful()) {
                 $data = $karyawanResponse->json();
-                if (isset($data['status']) && $data['status'] === 'success') {
-                    // Login Karyawan Berhasil
+                if ($data['status'] === 'success') {
                     $token = $data['token'];
                     Session::put('token', $token);
+
                     $decoded = JWT::decode($token, new Key(env('JWT_SECRET'), 'HS256'));
 
                     $user = [
                         'id_karyawan' => $decoded->id_karyawan ?? null,
-                        'nama' => $decoded->nama ?? null,
-                        'role' => $decoded->role ?? 'karyawan',
-                        'jabatan' => $decoded->jabatan ?? null,
+                        'nama'        => $decoded->nama ?? null,
+                        'role'        => $decoded->role ?? 'karyawan',
+                        'jabatan'     => $decoded->jabatan ?? null,
                     ];
+
                     Session::put('user', $user);
+
+                    // Force change password?
+                    if (isset($data['forceChangePassword']) && $data['forceChangePassword'] === true) {
+                        return redirect()->route('change-password');
+                    }
 
                     return redirect()->route('karyawan.dashboard-karyawan');
                 }
             }
 
-            // --- Jika Login Karyawan Gagal, Coba Login Sebagai Admin ---
+            // --- Login Admin / HRD / Owner / Direktur ---
             $adminResponse = Http::post('http://localhost:8080/api/admin/login', [
                 'nama' => $nama,
                 'password' => $password,
@@ -62,20 +68,25 @@ class AuthController extends Controller
 
             if ($adminResponse->successful()) {
                 $data = $adminResponse->json();
-                if (isset($data['status']) && $data['status'] === 'success') {
-                    // Login Admin Berhasil
+                if ($data['status'] === 'success') {
                     $token = $data['token'];
                     Session::put('token', $token);
+
                     $decoded = JWT::decode($token, new Key(env('JWT_SECRET'), 'HS256'));
 
                     $user = [
-                        'id_admin' => $decoded->id_admin ?? null,
-                        'nama' => $decoded->nama ?? null,
-                        'role' => $decoded->role ?? 'admin',
+                        'id_admin' => $decoded->id_karyawan ?? null,
+                        'nama'     => $decoded->nama ?? null,
+                        'role'     => strtolower($decoded->role ?? 'admin'),
                     ];
+
                     Session::put('user', $user);
-                    
-                    // Alihkan berdasarkan peran (role) dari BE
+
+                    // Force change password?
+                    if (isset($data['forceChangePassword']) && $data['forceChangePassword'] === true) {
+                        return redirect()->route('change-password');
+                    }
+
                     switch ($user['role']) {
                         case 'hrd':
                             return redirect()->route('admin.dashboard');
@@ -89,15 +100,50 @@ class AuthController extends Controller
                 }
             }
 
-            // Jika kedua percobaan login gagal
             return redirect()->route('login')->withErrors(['msg' => 'Nama atau Password salah!']);
-
         } catch (\Exception $e) {
-            // Tangani kesalahan koneksi atau lainnya
             return redirect()->route('login')->withErrors(['msg' => 'Terjadi error: ' . $e->getMessage()]);
         }
     }
 
+    // Proses ganti password
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'password_lama' => 'required|string',
+            'password_baru' => 'required|string|min:6|confirmed',
+        ]);
+
+        $user = Session::get('user');
+        if (!$user) {
+            return redirect()->route('login')->withErrors(['msg' => 'Session habis. Silakan login kembali.']);
+        }
+
+        $id = $user['id_karyawan'] ?? $user['id_admin'] ?? null;
+        $role = $user['role'] ?? 'karyawan';
+        $apiUrl = ($role === 'karyawan')
+            ? "http://localhost:8080/api/karyawan/password/$id"
+            : "http://localhost:8080/api/admin/$id/password";
+
+        $response = Http::put($apiUrl, [
+            'password_lama' => $request->password_lama,
+            'password_baru' => $request->password_baru,
+        ]);
+
+        if ($response->successful()) {
+            // Hapus session lama
+            Session::forget('token');
+            Session::forget('user');
+
+            return redirect()->route('login')->with('success', 'Password berhasil diubah. Silakan login dengan password baru.');
+        } else {
+            $data = $response->json();
+            $msg = $data['message'] ?? 'Gagal mengubah password';
+            return redirect()->back()->withErrors(['msg' => $msg]);
+        }
+    }
+
+    // Logout
     public function logout(Request $request)
     {
         $request->session()->flush();

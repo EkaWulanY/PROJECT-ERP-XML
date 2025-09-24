@@ -45,7 +45,8 @@
         .sidebar {
             width: 250px;
             height: 100vh;
-            background-color: #FF6600; /* 🔹 Warna orange */
+            background-color: #FF6600;
+            /* 🔹 Warna orange */
             color: white;
             padding-top: 2rem;
             position: fixed;
@@ -110,8 +111,8 @@
         </div>
 
         <nav class="w-full">
-            <a href="{{ route('admin.dashboard') }}" 
-               class="px-6 {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+            <a href="{{ route('admin.dashboard') }}"
+                class="px-6 {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <i class="fa-solid fa-house-chimney mr-3"></i>Dashboard
             </a>
 
@@ -123,20 +124,20 @@
                 <i class="fa-solid fa-caret-down"></i>
             </a>
             <div class="dropdown-menu" id="lamaran-dropdown">
-                <a href="{{ route('admin.jobs.list') }}" 
-                   class="dropdown-item {{ request()->routeIs('admin.jobs.list') ? 'active' : '' }}">
+                <a href="{{ route('admin.jobs.list') }}"
+                    class="dropdown-item {{ request()->routeIs('admin.jobs.list') ? 'active' : '' }}">
                     <i class="fa-solid fa-list-check mr-3"></i>List Job
                 </a>
-                <a href="{{ route('admin.pelamar.list') }}" 
-                   class="dropdown-item {{ request()->routeIs('admin.pelamar.list') ? 'active' : '' }}">
+                <a href="{{ route('admin.pelamar.list') }}"
+                    class="dropdown-item {{ request()->routeIs('admin.pelamar.list') ? 'active' : '' }}">
                     <i class="fa-solid fa-users mr-3"></i>Data Pelamar
                 </a>
-                <a href="{{ route('admin.form.lamaran') }}" 
-                   class="dropdown-item {{ request()->routeIs('admin.form.lamaran') ? 'active' : '' }}">
+                <a href="{{ route('admin.form.lamaran') }}"
+                    class="dropdown-item {{ request()->routeIs('admin.form.lamaran') ? 'active' : '' }}">
                     <i class="fa-solid fa-file-pen mr-3"></i>Edit Form Daftar
                 </a>
-                <a href="{{ route('admin.qrcode') }}" 
-                   class="dropdown-item {{ request()->routeIs('admin.qrcode') ? 'active' : '' }}">
+                <a href="{{ route('admin.qrcode') }}"
+                    class="dropdown-item {{ request()->routeIs('admin.qrcode') ? 'active' : '' }}">
                     <i class="fa-solid fa-qrcode mr-3"></i>Generate QR
                 </a>
             </div>
@@ -149,13 +150,12 @@
                 <i class="fa-solid fa-caret-down"></i>
             </a>
             <div class="dropdown-menu" id="karyawan-dropdown">
-                <a href="{{ route('karyawan.list') }}" 
-                   class="dropdown-item {{ request()->routeIs('karyawan.list') ? 'active' : '' }}">
-                   <i class="fa-solid fa-users-gear mr-3"></i>Data Karyawan
+                <a href="{{ route('karyawan.list') }}"
+                    class="dropdown-item {{ request()->routeIs('karyawan.list') ? 'active' : '' }}">
+                    <i class="fa-solid fa-users-gear mr-3"></i>Data Karyawan
                 </a>
-                <a href="#" class="dropdown-item disabled"><i class="fa-solid fa-calendar-check mr-3"></i>Pengajuan Cuti</a>
-                <a href="#" class="dropdown-item disabled"><i class="fa-solid fa-clock mr-3"></i>Pengajuan Izin</a>
-                <a href="#" class="dropdown-item disabled"><i class="fa-solid fa-book mr-3"></i>Riwayat Izin & Cuti</a>
+                <a href="{{ route('perizinan.karyawan') }}" class="dropdown-item"><i class="fa-solid fa-calendar-check mr-3"></i>Perizinan karyawan</a>
+                <a href="{{ route('riwayat.perizinan') }}" class="dropdown-item"><i class="fa-solid fa-book mr-3"></i>Riwayat Izin & Cuti</a>
             </div>
 
             <!-- 🔹 Cuti HRD -->
@@ -171,8 +171,8 @@
             </div>
 
             <!-- 🔹 Absensi -->
-            <a href="{{ asset('finger/finger.php') }}" 
-               class="px-6 {{ request()->is('finger/*') ? 'active' : '' }}">
+            <a href="{{ asset('finger/finger.php') }}"
+                class="px-6 {{ request()->is('finger/*') ? 'active' : '' }}">
                 <i class="fa-solid fa-fingerprint mr-3"></i>Absensi
             </a>
         </nav>
@@ -185,7 +185,7 @@
                 <span>Logout</span>
             </a>
         </div>
-        
+
     </div>
 
     <div class="flex-grow content-area">
@@ -504,10 +504,18 @@
     <script>
         $(document).ready(function() {
             // Dropdown toggle
-            const dropdowns = [
-                { btn: '#lamaran-dropdown-btn', menu: '#lamaran-dropdown' },
-                { btn: '#karyawan-dropdown-btn', menu: '#karyawan-dropdown' },
-                { btn: '#cuti-dropdown-btn', menu: '#cuti-dropdown' },
+            const dropdowns = [{
+                    btn: '#lamaran-dropdown-btn',
+                    menu: '#lamaran-dropdown'
+                },
+                {
+                    btn: '#karyawan-dropdown-btn',
+                    menu: '#karyawan-dropdown'
+                },
+                {
+                    btn: '#cuti-dropdown-btn',
+                    menu: '#cuti-dropdown'
+                },
             ];
 
             dropdowns.forEach(d => {
@@ -600,4 +608,5 @@
         }
     </script>
 </body>
+
 </html>

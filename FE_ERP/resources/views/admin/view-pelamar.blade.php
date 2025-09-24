@@ -105,9 +105,8 @@
                     </a>
                     <div class="dropdown-menu bg-[#FF6600] rounded-lg shadow-lg mt-2">
                         <a href="{{ route('karyawan.list') }}" class="block px-4 py-2 text-white hover:bg-[#FF8533] {{ request()->routeIs('karyawan.list') ? 'active-link' : '' }}">Data Karyawan</a>
-                        <a href="#" class="block px-4 py-2 text-white disabled-link">Pengajuan Cuti</a>
-                        <a href="#" class="block px-4 py-2 text-white disabled-link">Pengajuan Izin</a>
-                        <a href="#" class="block px-4 py-2 text-white disabled-link">Riwayat Izin & Cuti</a>
+                        <a href="{{ route('perizinan.karyawan') }}" class="block px-4 py-2 text-white active-link">Perizinan Karyawan</a>
+                        <a href="{{ route('riwayat.perizinan') }} " class="block px-4 py-2 text-white active-link">Riwayat Izin & Cuti</a>
                     </div>
                 </li>
 

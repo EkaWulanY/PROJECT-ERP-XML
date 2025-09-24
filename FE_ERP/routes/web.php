@@ -6,7 +6,8 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\P_PelamarController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DataKaryawanController;
-use App\Controllers\PerizinanKaryawanController;
+use App\Http\Controllers\PerizinanKaryawanController;
+
 /*
 |--------------------------------------------------------------------------
 | ROUTES UNTUK PELAMAR (Frontend)
@@ -93,24 +94,34 @@ Route::get('/', [AuthController::class, 'showLogin'])->name('login');
 // Proses Login
 Route::post('/login', [AuthController::class, 'login'])->name('login.process');
 
+// Dashboard per role
 Route::get('/admin/dashboard', function () {
     return view('admin.dashboard');
 })->name('admin.dashboard');
 
 Route::get('/owner/dashboard-owner', function () {
-    return view('owner.dashboard-owner');
+    return view('admin.dashboard');
 })->name('owner.dashboard-owner');
 
 Route::get('/direktur/dashboard-direktur', function () {
-    return view('direktur.dashboard-direktur');
+    return view('admin.dashboard');
 })->name('direktur.dashboard-direktur');
 
 Route::get('/karyawan/dashboard-karyawan', function () {
-    return view('karyawan.dashboard-karyawan');
+    return view('admin.dashboard');
 })->name('karyawan.dashboard-karyawan');
 
-// Route untuk Logout
-Route::get('/logout', [AuthController::class, 'logout'])->name('logout'); // <-- Tambahkan baris ini
+// Halaman ganti password
+Route::get('/change-password', function () {
+    return view('auth.change-password');
+})->name('change-password');
+
+// Proses ganti password
+Route::post('/change-password', [AuthController::class, 'changePassword'])->name('change-password.process');
+
+// Logout
+Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+
 /*
 |------------------------------------------------------------------------------------
 | ROUTES UNTUK CUTI / IZIN HRD (punya hrd kalau dia ngajuin cuti / izin buat sendiri)
@@ -139,3 +150,11 @@ Route::post('/karyawan', [DataKaryawanController::class, 'store'])->name('karyaw
 Route::put('/karyawan/{id}', [DataKaryawanController::class, 'update'])->name('karyawan.update');
 Route::delete('/karyawan/{id}', [DataKaryawanController::class, 'destroy'])->name('karyawan.destroy');
 Route::get('/karyawan/export', [DataKaryawanController::class, 'export'])->name('karyawan.export');
+
+Route::prefix('hrd')->group(function () {
+    Route::get('/perizinan-karyawan', [PerizinanKaryawanController::class, 'index'])->name('perizinan.karyawan');
+    Route::get('/riwayat-perizinan', [PerizinanKaryawanController::class, 'riwayat'])->name('riwayat.perizinan');
+    Route::get('/perizinan/{id}', [PerizinanKaryawanController::class, 'show'])->name('perizinan.detail');
+    Route::post('/perizinan/{id}/approve', [PerizinanKaryawanController::class, 'approve'])->name('perizinan.approve');
+    Route::post('/perizinan/{id}/reject', [PerizinanKaryawanController::class, 'reject'])->name('perizinan.reject');
+});

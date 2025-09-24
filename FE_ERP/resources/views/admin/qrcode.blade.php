@@ -1,257 +1,232 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QR Code Lowongan Kerja</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Pelamar - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #e5e7eb;
+        }
 
-    body {
-        font-family: 'Inter', sans-serif;
-        background-color: #e5e7eb;
-        display: flex;
-    }
+        .status-label {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            color: #fff;
+        }
 
-    /* START: Styling untuk sidebar */
-    .sidebar {
-        width: 250px;
-        background-color: #FF6000; /* 🔹 ganti warna sidebar */
-        color: white;
-        padding: 1rem;
-        height: 100vh;
-        position: fixed;
-        top: 0;
-        left: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-    }
+        .status-on-progress-label {
+            background-color: #3b82f6;
+        }
 
-    .sidebar a,
-    .sidebar .dropdown-btn {
-        display: flex;
-        align-items: center;
-        padding: 0.75rem 1rem;
-        margin-bottom: 0.5rem;
-        border-radius: 0.5rem;
-        transition: background-color 0.3s ease;
-        cursor: pointer;
-        width: 100%;
-    }
+        .status-diterima-label {
+            background-color: #21CA57;
+        }
 
-    .sidebar a:hover,
-    .sidebar .dropdown-btn:hover {
-        background-color: rgba(255, 255, 255, 0.2);
-    }
+        .status-ditolak-label {
+            background-color: #ef4444;
+        }
 
-    /* 🔹 menu active */
-    .sidebar a.active,
-    .sidebar .dropdown-btn.active {
-        background-color: rgba(255, 255, 150, 0.5); /* kuning muda transparan */
-        color: #000;
-        font-weight: 600;
-    }
+        .status-pending-label {
+            background-color: #f59e0b;
+        }
 
-    .dropdown-menu {
-        display: none;
-        overflow: hidden;
-        transition: max-height 0.3s ease-out;
-        width: 100%;
-    }
+        .status-pool-label {
+            background-color: #6366f1;
+        }
 
-    .dropdown-menu a {
-        padding-left: 3rem;
-    }
-    /* END: Styling untuk sidebar */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background-color: #FF6600;
+            color: white;
+            padding-top: 2rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            transition: transform 0.3s ease-in-out;
+            transform: translateX(0);
+        }
 
-    .hover-effect-btn:hover {
-        background-color: #4E71FF;
-        transition: background-color 0.3s ease;
-    }
+        .content-area {
+            margin-left: 250px;
+        }
 
-    .main-content {
-        flex-grow: 1;
-        margin-left: 250px;
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-    }
+        .sidebar a {
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            border-left: 4px solid transparent;
+            transition: all 0.2s ease;
+        }
 
-    /* 🔹 ganti warna topbar */
-    .top-bar {
-        background-color: #FF6000;
-        color: white;
-        padding: 1rem;
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
+        .sidebar a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left-color: #ffffff;
+        }
 
-    .content-area {
-        padding: 2rem;
-        flex-grow: 1;
-    }
-</style>
+        .sidebar a.active {
+            background-color: rgba(255, 255, 0, 0.2);
+            border-left-color: yellow;
+        }
 
+        .dropdown-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .dropdown-menu.active {
+            max-height: 500px;
+            transition: max-height 0.5s ease-in;
+        }
+
+        .dropdown-item {
+            padding-left: 3.5rem;
+            font-weight: normal;
+        }
+
+        .dropdown-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 
-<body>
-<div class="sidebar">
-<div class="flex items-center mb-6">
-<img src="{{ asset('admin/img/logo.jpg') }}" alt="Logo" class="h-10 w-10 mr-2 rounded-full">
-<span class="text-xl font-bold">Sistem ERP HR</span>
-</div>
+<body class="bg-gray-200 flex">
+    <div class="sidebar flex flex-col items-center">
+        <div class="flex items-center mb-10 px-4">
+            <img src="{{ asset('admin/img/logo.jpg') }}" alt="Logo" class="h-10 w-10 mr-3 rounded-full">
+            <span class="text-xl font-bold">Sistem ERP HR</span>
+        </div>
 
-    <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-        </svg>
-        Dashboard
-    </a>
+        <nav class="w-full">
+            <a href="{{ route('admin.dashboard') }}"
+                class="px-6 {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                <i class="fa-solid fa-house-chimney mr-3"></i>Dashboard
+            </a>
 
-    {{-- 🔹 Dropdown Lamaran --}}
-    <div class="w-full">
-        <button id="dropdown-btn" class="dropdown-btn w-full text-left focus:outline-none flex items-center justify-between">
-            <div class="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6z" />
+            <!-- 🔹 Lamaran kerja -->
+            <a href="#" class="flex justify-between items-center px-6" id="lamaran-dropdown-btn">
+                <span><i class="fa-solid fa-briefcase mr-3"></i>Lamaran Kerja</span>
+                <i class="fa-solid fa-caret-down"></i>
+            </a>
+            <div class="dropdown-menu" id="lamaran-dropdown">
+                <a href="{{ route('admin.jobs.list') }}"
+                    class="dropdown-item {{ request()->routeIs('admin.jobs.list') ? 'active' : '' }}">
+                    <i class="fa-solid fa-list-check mr-3"></i>List Job
+                </a>
+                <a href="{{ route('admin.pelamar.list') }}"
+                    class="dropdown-item {{ request()->routeIs('admin.pelamar.list') ? 'active' : '' }}">
+                    <i class="fa-solid fa-users mr-3"></i>Data Pelamar
+                </a>
+                <a href="{{ route('admin.form.lamaran') }}"
+                    class="dropdown-item {{ request()->routeIs('admin.form.lamaran') ? 'active' : '' }}">
+                    <i class="fa-solid fa-file-pen mr-3"></i>Edit Form Daftar
+                </a>
+                <a href="{{ route('admin.qrcode') }}"
+                    class="dropdown-item {{ request()->routeIs('admin.qrcode') ? 'active' : '' }}">
+                    <i class="fa-solid fa-qrcode mr-3"></i>Generate QR
+                </a>
+            </div>
+
+            <!-- 🔹 Karyawan -->
+            <a href="#" class="flex justify-between items-center px-6" id="karyawan-dropdown-btn">
+                <span><i class="fa-solid fa-id-badge mr-3"></i>Cuti Karyawan</span>
+                <i class="fa-solid fa-caret-down"></i>
+            </a>
+            <div class="dropdown-menu" id="karyawan-dropdown">
+                <a href="{{ route('karyawan.list') }}"
+                    class="dropdown-item {{ request()->routeIs('karyawan.list') ? 'active' : '' }}">
+                    <i class="fa-solid fa-users-gear mr-3"></i>Data Karyawan
+                </a>
+                <a href="{{ route('perizinan.karyawan') }}" class="dropdown-item"><i class="fa-solid fa-calendar-check mr-3"></i>Perizinan karyawan</a>
+                <a href="{{ route('riwayat.perizinan') }}" class="dropdown-item"><i class="fa-solid fa-book mr-3"></i>Riwayat Izin & Cuti</a>
+            </div>
+
+            <!-- 🔹 Cuti HRD -->
+            <a href="#" class="flex justify-between items-center px-6" id="cuti-dropdown-btn">
+                <span><i class="fa-solid fa-calendar-days mr-3"></i>Cuti HRD</span>
+                <i class="fa-solid fa-caret-down"></i>
+            </a>
+            <div class="dropdown-menu" id="cuti-dropdown">
+                <a href="#" class="dropdown-item disabled"><i class="fa-solid fa-envelope-open mr-3"></i>Pengajuan Izin/Cuti HRD</a>
+                <a href="#" class="dropdown-item disabled"><i class="fa-solid fa-history mr-3"></i>Riwayat Izin/Cuti HRD</a>
+            </div>
+
+            <!-- 🔹 Absensi -->
+            <a href="{{ asset('finger/finger.php') }}"
+                class="px-6 {{ request()->is('finger/*') ? 'active' : '' }}">
+                <i class="fa-solid fa-fingerprint mr-3"></i>Absensi
+            </a>
+        </nav>
+
+        <div class="mt-auto mb-4">
+            <a href="{{ route('logout') }}" class="flex items-center px-4 py-2 rounded-lg hover-highlight">
+                <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
-                Lamaran Pekerjaan
-            </div>
-            <svg id="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 transition-transform duration-300 transform" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-            </svg>
-        </button>
-        <div id="dropdown-menu" class="dropdown-menu">
-            <a href="{{ route('admin.jobs.list') }}" class="{{ request()->routeIs('admin.jobs.list') ? 'active' : '' }}">
-                📄 List Job
-            </a>
-            <a href="{{ route('admin.pelamar.list') }}" class="{{ request()->routeIs('admin.pelamar.list') ? 'active' : '' }}">
-                👥 Data Pelamar
-            </a>
-            <a href="{{ route('admin.form.lamaran') }}" class="{{ request()->routeIs('admin.form.lamaran') ? 'active' : '' }}">
-                📝 Edit Form Daftar
-            </a>
-            <a href="{{ route('admin.qrcode') }}" class="{{ request()->routeIs('admin.qrcode') ? 'active' : '' }}">
-                🔗 Generate QR
+                <span>Logout</span>
             </a>
         </div>
     </div>
 
-    {{-- 🔹 Dropdown Karyawan --}}
-    <div class="w-full">
-        <button id="karyawan-dropdown-btn" class="dropdown-btn w-full text-left focus:outline-none flex items-center justify-between">
+    <div class="flex-grow content-area">
+        <div class="bg-[#FF6600] text-white p-4 flex justify-end items-center shadow-lg">
             <div class="flex items-center">
-                👨‍💼 Cuti Karyawan
+                <span class="mr-2">Admin</span>
+                <svg class="h-8 w-8 rounded-full border-2 border-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A7.962 7.962 0 0112 15a7.962 7.962 0 016.879 2.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
             </div>
-            <svg id="karyawan-dropdown-arrow" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2 transition-transform duration-300 transform" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-            </svg>
-        </button>
-        <div id="karyawan-dropdown-menu" class="dropdown-menu">
-            <a href="{{ route('karyawan.list') }}" class="{{ request()->routeIs('karyawan.list') ? 'active' : '' }}">
-                <span class="mr-3">👥</span> Data Karyawan
-            </a>
-            <a href="#" class="dropdown-item disabled opacity-50 cursor-not-allowed">
-                <span class="mr-3">📝</span> Pengajuan Cuti
-            </a>
-            <a href="#" class="dropdown-item disabled opacity-50 cursor-not-allowed">
-                <span class="mr-3">⏰</span> Pengajuan Izin
-            </a>
-            <a href="#" class="dropdown-item disabled opacity-50 cursor-not-allowed">
-                <span class="mr-3">📚</span> Riwayat Izin & Cuti
-            </a>
+        </div>
+
+        <div class="content-area">
+            <div class="flex flex-col items-center space-y-4">
+                <img id="qrcode" src="http://localhost:8080/qrcode/sistem" alt="QR Code" class="mx-auto mb-4 border-4 border-gray-300 rounded-lg shadow-lg">
+                <a href="http://localhost:8080/qrcode/sistem?download=1" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 shadow-md">
+                    Download QR Code
+                </a>
+            </div>
+
+            <center>
+                <a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 mt-6 inline-block">
+                    Kembali
+                </a>
+            </center>
         </div>
     </div>
 
-    {{-- 🔹 Dropdown Cuti HRD (non aktif) --}}
-    <div class="w-full">
-        <button class="dropdown-btn opacity-50 cursor-not-allowed">
-            📑 Cuti HRD
-        </button>
-    </div>
+    <script>
+        // =========================
+            // Dropdown Sidebar
+            // =========================
+            function toggleDropdown(btnId, menuId) {
+                const btn = document.getElementById(btnId);
+                const menu = document.getElementById(menuId);
 
-    <a href="{{ asset('finger/finger.php') }}" class="{{ request()->is('finger*') ? 'active' : '' }}">
-        🕒 Absensi
-    </a>
+                if (btn && menu) {
+                    btn.addEventListener("click", function(e) {
+                        e.preventDefault();
+                        menu.classList.toggle("active"); // class active = buka/tutup dropdown
+                    });
+                }
+            }
 
-    <div class="mt-auto mb-4"> <a href="{{ route('logout') }}"
-            class="flex items-center px-4 py-2 rounded-lg hover-highlight">
-            <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            <span>Logout</span>
-        </a>
-    </div>
-</div>
-
-<div class="main-content">
-    <div class="top-bar">
-        <div class="flex items-center">
-            <span class="mr-2">Admin</span>
-            <svg class="h-8 w-8 rounded-full border-2 border-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A7.962 7.962 0 0112 15a7.962 7.962 0 016.879 2.804M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-        </div>
-    </div>
-
-    <div class="content-area">
-        <div class="flex flex-col items-center space-y-4">
-            <img id="qrcode" src="http://localhost:8080/qrcode/sistem" alt="QR Code" class="mx-auto mb-4 border-4 border-gray-300 rounded-lg shadow-lg">
-            <a href="http://localhost:8080/qrcode/sistem?download=1" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 shadow-md">
-                Download QR Code
-            </a>
-        </div>
-
-        <center>
-            <a href="/" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 mt-6 inline-block">
-                Kembali
-            </a>
-        </center>
-    </div>
-</div>
-
-<script>
-    const dropdownBtn = document.getElementById('dropdown-btn');
-    const dropdownMenu = document.getElementById('dropdown-menu');
-    const dropdownArrow = document.getElementById('dropdown-arrow');
-
-    const karyawanDropdownBtn = document.getElementById('karyawan-dropdown-btn');
-    const karyawanDropdownMenu = document.getElementById('karyawan-dropdown-menu');
-    const karyawanDropdownArrow = document.getElementById('karyawan-dropdown-arrow');
-
-    dropdownBtn.addEventListener('click', () => {
-        const isMenuOpen = dropdownMenu.style.display === 'block';
-        dropdownMenu.style.display = isMenuOpen ? 'none' : 'block';
-        dropdownArrow.style.transform = isMenuOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-    });
-
-    karyawanDropdownBtn.addEventListener('click', () => {
-        const isMenuOpen = karyawanDropdownMenu.style.display === 'block';
-        karyawanDropdownMenu.style.display = isMenuOpen ? 'none' : 'block';
-        karyawanDropdownArrow.style.transform = isMenuOpen ? 'rotate(0deg)' : 'rotate(180deg)';
-    });
-
-    document.addEventListener('click', (event) => {
-        if (!dropdownBtn.contains(event.target) && !dropdownMenu.contains(event.target)) {
-            dropdownMenu.style.display = 'none';
-            dropdownArrow.style.transform = 'rotate(0deg)';
-        }
-        if (!karyawanDropdownBtn.contains(event.target) && !karyawanDropdownMenu.contains(event.target)) {
-            karyawanDropdownMenu.style.display = 'none';
-            karyawanDropdownArrow.style.transform = 'rotate(0deg)';
-        }
-    });
-</script>
+            // aktifkan dropdown
+            toggleDropdown("lamaran-dropdown-btn", "lamaran-dropdown");
+            toggleDropdown("karyawan-dropdown-btn", "karyawan-dropdown");
+            toggleDropdown("cuti-dropdown-btn", "cuti-dropdown");
+    </script>
 
 </body>
+
 </html>

@@ -6,35 +6,38 @@ use CodeIgniter\Model;
 
 class KaryawanModel extends Model
 {
-    protected $table         = 'karyawan';
-    protected $primaryKey    = 'id_karyawan';
-    // Tambahkan 'password_text' agar bisa tersimpan
+    protected $table      = 'karyawan';
+    protected $primaryKey = 'id_karyawan';
     protected $allowedFields = [
         'id_karyawan',
         'nama',
         'jabatan',
         'tipe',
         'password',
-        'password_text',  // <-- baru
         'username_telegram',
-        'chat_id'
+        'limit_cuti_tahunan',
+        'limit_cuti_menikah',
+        'limit_cuti_keguguran',
+        'limit_cuti_hamil',
+        'limit_cuti_kematian',
+        'limit_cuti_umroh',
+        'limit_cuti_rawat_inap',
+        'limit_cuti_sakit',
+        'limit_alasan_penting',
+        'limit_cuti_pemulihan',
+        'limit_tukar_shift',
+        'limit_tukar_libur'
     ];
+    // protected $useTimestamps = true; // otomatis created_at, updated_at
 
-    // Fungsi generate ID otomatis
+    // Generate ID otomatis: KRY001 dst
     public function generateID()
     {
-        $last = $this->select('id_karyawan')
-                     ->orderBy('id_karyawan', 'DESC')
-                     ->first();
-
-        if ($last) {
-            // Ambil angka dari ID terakhir
-            $num = (int) substr($last['id_karyawan'], 1);
-            $new = $num + 1;
-            return 'K' . str_pad($new, 3, '0', STR_PAD_LEFT);
-        } else {
-            // Kalau belum ada data
-            return 'K001';
+        $last = $this->orderBy('id_karyawan', 'DESC')->first();
+        if (!$last) {
+            return "KRY001";
         }
+        $num = intval(substr($last['id_karyawan'], 4)) + 1;
+        return "KRY" . str_pad($num, 4, "0", STR_PAD_LEFT);
     }
 }
